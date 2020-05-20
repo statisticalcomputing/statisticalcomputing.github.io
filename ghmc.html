@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2020-05-18 Mon 21:42 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>&lrm;</title>
+<meta name="generator" content="Org mode" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" type="text/css" href="css/org.css"/>
+<script type="text/javascript" src="js/ga.min.js"></script>
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</head>
+<body>
+<div id="org-div-home-and-up">
+ <a accesskey="h" href="misc.html"> UP </a>
+ |
+ <a accesskey="H" href="index.html"> HOME </a>
+</div><div id="content">
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org76ce93d">Hamiltonian Dynamics</a></li>
+<li><a href="#org090c7d6">Quadratic Energy</a>
+<ul>
+<li><a href="#org6c7ab99">HMC</a></li>
+<li><a href="#org48eb649">Riemann HMC</a>
+<ul>
+<li><a href="#orge54a152">Proposition 1</a></li>
+<li><a href="#orgf94bf9e">Proposition 2</a></li>
+</ul>
+</li>
+<li><a href="#org325df11">HMC based on Coordinate Transformation</a></li>
+</ul>
+</li>
+<li><a href="#orgf2508b4">Algorithm</a></li>
+<li><a href="#org71c9535">Estimation of Transformation parameters</a></li>
+<li><a href="#orgc886722">Experiment</a></li>
+</ul>
+</div>
+</div>
+<p>
+本文讨论基于坐标变换的哈密顿蒙特卡洛算法。并指出基于动量变换的方案存在的问题。
+</p>
+<div id="outline-container-org76ce93d" class="outline-2">
+<h2 id="org76ce93d">Hamiltonian Dynamics</h2>
+<div class="outline-text-2" id="text-org76ce93d">
+<p>
+哈密顿系统中，总能量等于动能和势能之和：
+\[H=K+U\]
+哈密顿公式指出了变量对时间的导数和能量对变量的偏导数之间具有如下关系
+\[\dot x=\frac{dK}{dp}\]
+\[\dot p=-\frac{dU}{dx}\]
+用数值算法（欧拉积分）可以实现根据当前时刻的值，求出下一个时刻的值：
+\[  x^{(i+1)}=x^{(i)} + \delta \frac{dK}{dp}\]
+\[  p^{(i+1)}=p^{(i)} - \delta \frac{dU}{dx}\]
+</p>
+</div>
+</div>
+<div id="outline-container-org090c7d6" class="outline-2">
+<h2 id="org090c7d6">Quadratic Energy</h2>
+<div class="outline-text-2" id="text-org090c7d6">
+<p>
+真实的物理系统一般采用二次动能的形式
+\[K(p)=\frac{p^T p}{2}\]
+如果考虑惯性矩阵，也可以表示为正定二次型
+\[K(p)=\frac{p^T \Sigma p}{2}\]
+势能一般为待抽样概率函数的负对数
+\[U(x)=-\log \pi(x)\]
+为了方便讨论，可以假设势能也是正定二次型
+\[U(x)=\frac{x^T \Sigma^{-1} x}{2}\]
+细心的读者可能会发现势能二次型矩阵和动能二次型矩阵为逆矩阵的关系。
+</p>
+
+<p>
+其实这两个矩阵可以没有任何关系，只是互为逆矩阵会导致出现一些特殊现象，我们随后将进行介绍。
+</p>
+</div>
+
+<div id="outline-container-org6c7ab99" class="outline-3">
+<h3 id="org6c7ab99">HMC</h3>
+<div class="outline-text-3" id="text-org6c7ab99">
+<p>
+哈密顿蒙特卡洛的动能采用二次函数，而势能采用正定二次型:
+\[K(p)=\frac{p^T p}{2}\]
+和
+\[U(x)=\frac{x^T \Sigma^{-1} x}{2}\]
+如果用以下正定矩阵的二维仿真来举例：
+\[\Sigma_1 = \begin{bmatrix}1&0.99\\0.99&1\\\end{bmatrix}\]
+可以得到如下仿真结果。
+本来动量应当是圆形轨迹，而位置是椭圆轨迹；但由于二者的耦合作用，使得二者的轨迹都偏离了原来的理想轨迹。即位置轨迹不再是椭圆的，动量轨迹也不再是圆形的。
+</p>
+
+<p>
+<img src="./ltximg/hmc271.png" alt="hmc271.png" />
+由于概率函数的参数等同于x变量，我们更关心空间位置轨迹的改善情况。然而此时轨迹在空间的移动速度较慢，发生了震荡现象。因此HMC的采样效果不理想。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org48eb649" class="outline-3">
+<h3 id="org48eb649">Riemann HMC</h3>
+<div class="outline-text-3" id="text-org48eb649">
+</div>
+<div id="outline-container-orge54a152" class="outline-4">
+<h4 id="orge54a152">Proposition 1</h4>
+<div class="outline-text-4" id="text-orge54a152">
+<p>
+黎曼哈密顿蒙特卡洛采用二次型的动能函数：
+\[K(p)=\frac{p^T \Sigma^{-1} p}{2}\]
+其中\[\Sigma\]矩阵与势能的二次型矩阵相同。
+然而这种方法的仿真效果可能比HMC的更差，它无法应用于正定矩阵&Sigma;<sub>1</sub>, 因为octave软件出现数值错误。
+</p>
+
+<p>
+如果降低要求，采用如下正定矩阵，
+\[\Sigma_2 = \begin{bmatrix}1&0.97\\0.97&1\\\end{bmatrix}\]
+可以得到如下的仿真结果:
+<img src="./ltximg/hmc26_1.png" alt="hmc26_1.png" />
+</p>
+
+<p>
+与HMC相比，这个仿真效果不仅没有明显改善，而且可能还更差，因为它不能应用于&Sigma;<sub>1</sub>。
+</p>
+</div>
+</div>
+<div id="outline-container-orgf94bf9e" class="outline-4">
+<h4 id="orgf94bf9e">Proposition 2</h4>
+<div class="outline-text-4" id="text-orgf94bf9e">
+<p>
+ 如果采用如下形式的动能
+\[K(p)=\frac{p^T \Sigma^{-1} p}{2}\]
+那么仿真算法可以应用于原来的&Sigma;<sub>1</sub>，其仿真效果如下：
+<img src="./ltximg/hmc26_2.png" alt="hmc26_2.png" />
+值得指出的是，这时轨迹的震荡现象被消除了，因此抽样效果优于Riemann HMC方案1（以及HMC）。
+</p>
+
+<p>
+然而其带来的副作用是：动量轨迹的质量严重恶化了，甚至于接近发散。
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org325df11" class="outline-3">
+<h3 id="org325df11">HMC based on Coordinate Transformation</h3>
+<div class="outline-text-3" id="text-org325df11">
+<p>
+如果对x进行坐标变化，得到z，使得势能函数变为简单的二次函数：
+\[U = \frac{z^T z}{2}\]
+则势能与动能，转换后的位置和动量具有对称的形式:
+\[K = \frac{p^T p}{2}\]
+将转换后的位置，动量，以及转换回去的原来的位置画在同一副图中：
+<img src="./ltximg/hmc25.png" alt="hmc25.png" />
+可以看出，轨迹与三倍标准差的界限符合的非常一致，并且转换回去的位置与&Sigma;<sub>1</sub> 的界限也完美匹配。
+</p>
+
+<p>
+对比以上几种方案，可以得出结论：对位置进行变换可以产生更高质量的轨迹。
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-orgf2508b4" class="outline-2">
+<h2 id="orgf2508b4">Algorithm</h2>
+<div class="outline-text-2" id="text-orgf2508b4">
+<p>
+设动能可以表示为原变量x或者变换后的变量z的函数：
+\[U(x) = \frac{(x-\mu)^T \Sigma^{-1} (x-\mu)}{2} = \frac{z^T z}{2}\]
+那么x和z具有如下关系：
+\[z=\Sigma^{-\frac{1}{2}} (x-\mu)\]
+\[x=\Sigma^{\frac{1}{2}} z + \mu\]
+如果将上述变化带入到欧拉积分中，可以得到：
+</p>
+
+<p>
+\[z^{(i+1)}=z^{(i)} + \delta \frac{dK}{dp}=z^{(i)} + \delta p\]
+\[\begin{split}
+    p^{(i+1)}&=p^{(i)} - \delta \frac{dU}{dz}\\
+    &= p^{(i)} - \delta \frac{dx}{dz}^T \frac{dU}{dx} \\
+    &=p^{(i)} - \delta \Sigma^{\frac{1}{2}} \frac{dU}{dx}\bigg|_{x=\Sigma^{\frac{1}{2}} z^{i+1} + \mu}
+  \end{split}\]
+</p>
+
+<p>
+因此如果知道均值和协方差矩阵，求协方差的矩阵平方根，就可以得到变换参数。
+</p>
+</div>
+</div>
+<div id="outline-container-org71c9535" class="outline-2">
+<h2 id="org71c9535">Estimation of Transformation parameters</h2>
+<div class="outline-text-2" id="text-org71c9535">
+<p>
+到目前位置，我们都假定知道势能的参数&mu; 和&Sigma;。
+</p>
+
+<p>
+然而对于一个目标势能来说，这些参数是未知的，需要从样本中估计出来。
+</p>
+
+<p>
+这个过程就像一个循环，从样本中估计参数，然后更新动能函数，随后使得采样更加准确，然后估计出更准确的参数&ctdot;。
+</p>
+
+<p>
+如果直接从所有以往的采样样本中直接估计这两个参数，不仅速度慢，而且可能也不准确。
+</p>
+
+<p>
+从统计理论可知，正态分布的均值和方差的后验估计的具有确定的解析公式。
+</p>
+
+<p>
+虽然我们研究的概率函数不一定服从正态分布，但我们可以假定其服从正态分布，从而利用上面所说的解析公式来更新均值和方差。
+以下直接使用教材中的公式。
+</p>
+
+<p>
+假定给定方差，均值的先验服从正态分布：
+\[\mu | \Sigma \sim N(\mu_0,\Sigma/\kappa_0)\]
+</p>
+
+<p>
+假设方差的先验服从逆wishart分布：
+\[\Sigma \sim InvWishart_{\nu 0}(\Lambda_0^{-1})\]
+</p>
+
+<p>
+则均值和方差的联合后验服从正态-逆wishart分布：
+\[p(\mu,\Sigma) \propto |\Sigma|^{((\nu_0+d)/2+1)}\text{exp}(-\frac{1}{2}\text{tr}(\Lambda_0
+  \Sigma^{-1})-\frac{\kappa_0}{2}(\mu - \mu_0)^T \Sigma^{-1}(\mu- \mu_0))\]
+则得到如下更新公式。
+自由度为：
+\[\kappa_n = \kappa_0 + n\]
+中间变量为：
+\[  \Lambda_n = \Lambda_0 + S + \frac{\kappa_0 n}{\kappa_{0}+ n} (\bar x -
+  \mu_0)(\bar x - \mu_0)^T\]
+方差的后验估计为：
+\[\hat \Sigma=\frac{\Lambda_n}{\kappa_0+n-D-1}\]
+均值的后验估计为
+\[\hat \mu = \frac{\kappa_0 }{\kappa_0 +n}\mu_0 + \frac{n}{\kappa_0 + n} \bar
+  x\]
+这些符号的意义说明如下：
+</p>
+<table border="0" cellspacing="0" cellpadding="6" rules="none" frame="none">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">符号</th>
+<th scope="col" class="org-left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">\(\Lambda_0\)</td>
+<td class="org-left">相当于先验 方差之和</td>
+</tr>
+
+<tr>
+<td class="org-left">\(\kappa_0\)</td>
+<td class="org-left">先验的自由度</td>
+</tr>
+
+<tr>
+<td class="org-left">n</td>
+<td class="org-left">批样本的大小</td>
+</tr>
+
+<tr>
+<td class="org-left">x</td>
+<td class="org-left">一批样本</td>
+</tr>
+
+<tr>
+<td class="org-left">\(\bar x\)</td>
+<td class="org-left">经验均值</td>
+</tr>
+
+<tr>
+<td class="org-left">S</td>
+<td class="org-left">散度矩阵</td>
+</tr>
+
+<tr>
+<td class="org-left">\(\mu_0\)</td>
+<td class="org-left">先验均值</td>
+</tr>
+
+<tr>
+<td class="org-left">\(\hat \Sigma\)</td>
+<td class="org-left">后验协方差估计</td>
+</tr>
+
+<tr>
+<td class="org-left">\(\hat \mu\)</td>
+<td class="org-left">后验均值估计</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="outline-container-orgc886722" class="outline-2">
+<h2 id="orgc886722">Experiment</h2>
+<div class="outline-text-2" id="text-orgc886722">
+<p>
+我们使用一系列从一般到高度奇异的协方差进行测试：
+\[  \Sigma = \begin{bmatrix}1&K\\K&1\\\end{bmatrix}\]
+其中K从0.1 变化到 0.9999999。
+然后计算协方差的估计误差，得到如下结果：
+<img src="./ltximg/hmc43.png" alt="hmc43.png" />
+这张图显示，基于位置变换的方法优于对比方法四个数字位以上。
+</p>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="date">Created: 2020-05-18 Mon 21:42</p>
+</div>
+</body>
+</html>
