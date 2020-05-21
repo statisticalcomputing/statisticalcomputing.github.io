@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2020-05-21 Thu 09:29 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>&lrm;</title>
+<meta name="generator" content="Org mode" />
+<meta name="description" content="介绍如何实现基于python和matlab的哈密顿仿真"
+ />
+<meta name="keywords" content="哈密顿, Hamiltonian" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" type="text/css" href="css/org.css"/>
+<script type="text/javascript" src="js/ga.min.js"></script>
+</head>
+<body>
+<div id="org-div-home-and-up">
+ <a accesskey="h" href="sitemap.html"> UP </a>
+ |
+ <a accesskey="H" href="index.html"> HOME </a>
+</div><div id="content">
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org814dcf7">MATLAB/Octave</a></li>
+<li><a href="#orga8a2e49">Python</a></li>
+</ul>
+</div>
+</div>
+<p>
+本文介绍如何实现最简单的哈密顿仿真，为简单起见，不涉及:蒙特卡洛采样、坐标变换、动量变换。
+</p>
+<div id="outline-container-org814dcf7" class="outline-2">
+<h2 id="org814dcf7">MATLAB/Octave</h2>
+<div class="outline-text-2" id="text-org814dcf7">
+<ol class="org-ol">
+<li><p>
+首先定义势能函数及其导数，这里使用了一个二次函数，对应二维正态分布
+</p>
+<div class="org-src-container">
+<pre class="src src-octave">SIGMA<span style="color: #3a81c3;">=</span><span style="color: #3a81c3;">[</span><span style="color: #4e3163;">1</span><span style="color: #3a81c3;">,</span>.<span style="color: #4e3163;">95</span><span style="color: #3a81c3;">;</span>.<span style="color: #4e3163;">95</span><span style="color: #3a81c3;">,</span><span style="color: #4e3163;">1</span><span style="color: #3a81c3;">]</span><span style="color: #3a81c3;">;</span>
+U <span style="color: #3a81c3;">=</span> @<span style="color: #3a81c3;">(</span>x<span style="color: #3a81c3;">)</span> x<span style="color: #3a81c3;">'</span> <span style="color: #3a81c3;">*</span> inv<span style="color: #3a81c3;">(</span>SIGMA<span style="color: #3a81c3;">)</span> <span style="color: #3a81c3;">*</span> x<span style="color: #3a81c3;">/</span><span style="color: #4e3163;">2</span><span style="color: #3a81c3;">;</span>
+dU <span style="color: #3a81c3;">=</span> @<span style="color: #3a81c3;">(</span>x<span style="color: #3a81c3;">)</span> inv<span style="color: #3a81c3;">(</span>SIGMA<span style="color: #3a81c3;">)</span><span style="color: #3a81c3;">*</span>x<span style="color: #3a81c3;">;</span>
+</pre>
+</div></li>
+
+<li><p>
+然后定义动能函数及其导数
+</p>
+<div class="org-src-container">
+<pre class="src src-octave">K <span style="color: #3a81c3;">=</span> @<span style="color: #3a81c3;">(</span>x<span style="color: #3a81c3;">)</span> x<span style="color: #3a81c3;">'</span> <span style="color: #3a81c3;">*</span>  x<span style="color: #3a81c3;">/</span><span style="color: #4e3163;">2</span><span style="color: #3a81c3;">;</span>
+dK <span style="color: #3a81c3;">=</span> @<span style="color: #3a81c3;">(</span>x<span style="color: #3a81c3;">)</span> x<span style="color: #3a81c3;">;</span>
+</pre>
+</div></li>
+
+<li><p>
+定义初始位置和动量
+</p>
+<div class="org-src-container">
+<pre class="src src-octave">xStar <span style="color: #3a81c3;">=</span> randn<span style="color: #3a81c3;">(</span><span style="color: #4e3163;">2</span><span style="color: #3a81c3;">,</span><span style="color: #4e3163;">1</span><span style="color: #3a81c3;">)</span><span style="color: #3a81c3;">;</span>
+pStar <span style="color: #3a81c3;">=</span> randn<span style="color: #3a81c3;">(</span><span style="color: #4e3163;">2</span><span style="color: #3a81c3;">,</span><span style="color: #4e3163;">1</span><span style="color: #3a81c3;">)</span><span style="color: #3a81c3;">;</span>
+</pre>
+</div></li>
+
+<li><p>
+定义步长和步数超参数
+</p>
+<div class="org-src-container">
+<pre class="src src-octave">STEPS <span style="color: #3a81c3;">=</span> <span style="color: #4e3163;">100</span>
+delta <span style="color: #3a81c3;">=</span> <span style="color: #4e3163;">0</span>.<span style="color: #4e3163;">1</span>
+</pre>
+</div></li>
+
+<li><p>
+开始运行仿真
+</p>
+<div class="org-src-container">
+<pre class="src src-octave"><span style="color: #3a81c3; font-weight: bold;">for</span> j<span style="color: #3a81c3;">=</span> <span style="color: #4e3163;">1</span><span style="color: #3a81c3;">:</span>STEPS
+  xStar <span style="color: #3a81c3;">=</span> xStar <span style="color: #3a81c3;">+</span> delta<span style="color: #3a81c3;">*</span>dK<span style="color: #3a81c3;">(</span>pStar<span style="color: #3a81c3;">)</span><span style="color: #3a81c3;">;</span>
+  pStar <span style="color: #3a81c3;">=</span> pStar <span style="color: #3a81c3;">-</span> delta<span style="color: #3a81c3;">**</span>dU<span style="color: #3a81c3;">(</span>xStar<span style="color: #3a81c3;">)</span><span style="color: #3a81c3;">;</span>
+<span style="color: #3a81c3; font-weight: bold;">end</span>
+</pre>
+</div></li>
+
+<li><p>
+整个代码
+</p>
+<div class="org-src-container">
+<pre class="src src-octave">SIGMA<span style="color: #3a81c3;">=</span><span style="color: #3a81c3;">[</span><span style="color: #4e3163;">1</span><span style="color: #3a81c3;">,</span>.<span style="color: #4e3163;">95</span><span style="color: #3a81c3;">;</span>.<span style="color: #4e3163;">95</span><span style="color: #3a81c3;">,</span><span style="color: #4e3163;">1</span><span style="color: #3a81c3;">]</span><span style="color: #3a81c3;">;</span>
+U <span style="color: #3a81c3;">=</span> @<span style="color: #3a81c3;">(</span>x<span style="color: #3a81c3;">)</span> x<span style="color: #3a81c3;">'</span> <span style="color: #3a81c3;">*</span> inv<span style="color: #3a81c3;">(</span>SIGMA<span style="color: #3a81c3;">)</span> <span style="color: #3a81c3;">*</span> x<span style="color: #3a81c3;">/</span><span style="color: #4e3163;">2</span><span style="color: #3a81c3;">;</span>
+dU <span style="color: #3a81c3;">=</span> @<span style="color: #3a81c3;">(</span>x<span style="color: #3a81c3;">)</span> inv<span style="color: #3a81c3;">(</span>SIGMA<span style="color: #3a81c3;">)</span><span style="color: #3a81c3;">*</span>x<span style="color: #3a81c3;">;</span>
+K <span style="color: #3a81c3;">=</span> @<span style="color: #3a81c3;">(</span>x<span style="color: #3a81c3;">)</span> x<span style="color: #3a81c3;">'</span> <span style="color: #3a81c3;">*</span>  x<span style="color: #3a81c3;">/</span><span style="color: #4e3163;">2</span><span style="color: #3a81c3;">;</span>
+dK <span style="color: #3a81c3;">=</span> @<span style="color: #3a81c3;">(</span>x<span style="color: #3a81c3;">)</span> x<span style="color: #3a81c3;">;</span>
+xStar <span style="color: #3a81c3;">=</span> randn<span style="color: #3a81c3;">(</span><span style="color: #4e3163;">2</span><span style="color: #3a81c3;">,</span><span style="color: #4e3163;">1</span><span style="color: #3a81c3;">)</span><span style="color: #3a81c3;">;</span>
+pStar <span style="color: #3a81c3;">=</span> randn<span style="color: #3a81c3;">(</span><span style="color: #4e3163;">2</span><span style="color: #3a81c3;">,</span><span style="color: #4e3163;">1</span><span style="color: #3a81c3;">)</span><span style="color: #3a81c3;">;</span>
+STEPS <span style="color: #3a81c3;">=</span> <span style="color: #4e3163;">100</span>
+delta <span style="color: #3a81c3;">=</span> <span style="color: #4e3163;">0</span>.<span style="color: #4e3163;">1</span>
+<span style="color: #3a81c3; font-weight: bold;">for</span> j<span style="color: #3a81c3;">=</span> <span style="color: #4e3163;">1</span><span style="color: #3a81c3;">:</span>STEPS
+  xStar <span style="color: #3a81c3;">=</span> xStar <span style="color: #3a81c3;">+</span> delta<span style="color: #3a81c3;">*</span>dK<span style="color: #3a81c3;">(</span>pStar<span style="color: #3a81c3;">)</span><span style="color: #3a81c3;">;</span>
+  pStar <span style="color: #3a81c3;">=</span> pStar <span style="color: #3a81c3;">-</span> delta<span style="color: #3a81c3;">**</span>dU<span style="color: #3a81c3;">(</span>xStar<span style="color: #3a81c3;">)</span><span style="color: #3a81c3;">;</span>
+<span style="color: #3a81c3; font-weight: bold;">end</span>
+</pre>
+</div></li>
+</ol>
+</div>
+</div>
+
+
+<div id="outline-container-orga8a2e49" class="outline-2">
+<h2 id="orga8a2e49">Python</h2>
+<div class="outline-text-2" id="text-orga8a2e49">
+<ol class="org-ol">
+<li><p>
+引入数值计算库
+</p>
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #3a81c3; font-weight: bold;">import</span> numpy <span style="color: #3a81c3; font-weight: bold;">as</span> np
+</pre>
+</div></li>
+
+<li><p>
+定义势能及其导数
+</p>
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #715ab1;">SIGMA</span> = np.array<span style="color: #3a81c3;">(</span><span style="color: #6c3163;">[</span><span style="color: #2d9574;">[</span><span style="color: #4e3163;">1</span>,.<span style="color: #4e3163;">95</span><span style="color: #2d9574;">]</span>,<span style="color: #2d9574;">[</span>.<span style="color: #4e3163;">95</span>,<span style="color: #4e3163;">1</span><span style="color: #2d9574;">]</span><span style="color: #6c3163;">]</span><span style="color: #3a81c3;">)</span>
+<span style="color: #715ab1;">U</span> = <span style="color: #3a81c3; font-weight: bold;">lambda</span> x: np.dot<span style="color: #3a81c3;">(</span>x,np.dot<span style="color: #6c3163;">(</span>np.linalg.inv<span style="color: #2d9574;">(</span>SIGMA<span style="color: #2d9574;">)</span>,x<span style="color: #6c3163;">)</span><span style="color: #3a81c3;">)</span>/<span style="color: #4e3163;">2</span>
+<span style="color: #715ab1;">dU</span> = <span style="color: #3a81c3; font-weight: bold;">lambda</span> x: np.dot<span style="color: #3a81c3;">(</span>np.linalg.inv<span style="color: #6c3163;">(</span>np.array<span style="color: #2d9574;">(</span><span style="color: #67b11d;">[</span><span style="color: #b1951d;">[</span><span style="color: #4e3163;">1</span>,.<span style="color: #4e3163;">8</span><span style="color: #b1951d;">]</span>,<span style="color: #b1951d;">[</span>.<span style="color: #4e3163;">8</span>,<span style="color: #4e3163;">1</span><span style="color: #b1951d;">]</span><span style="color: #67b11d;">]</span><span style="color: #2d9574;">)</span><span style="color: #6c3163;">)</span>,x<span style="color: #3a81c3;">)</span>
+</pre>
+</div></li>
+
+<li><p>
+定义动能及其导数
+</p>
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #715ab1;">K</span> = <span style="color: #3a81c3; font-weight: bold;">lambda</span> p: np.dot<span style="color: #3a81c3;">(</span>p,p<span style="color: #3a81c3;">)</span>/<span style="color: #4e3163;">2</span>
+<span style="color: #715ab1;">dK</span> = <span style="color: #3a81c3; font-weight: bold;">lambda</span> p: p
+</pre>
+</div></li>
+
+<li><p>
+定义初始位置和动量
+</p>
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #715ab1;">xStar</span> = np.random.randn<span style="color: #3a81c3;">(</span><span style="color: #4e3163;">2</span><span style="color: #3a81c3;">)</span>
+<span style="color: #715ab1;">pStar</span> = np.random.randn<span style="color: #3a81c3;">(</span><span style="color: #4e3163;">2</span><span style="color: #3a81c3;">)</span>
+</pre>
+</div></li>
+
+<li><p>
+超参数
+</p>
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #715ab1;">STEPS</span> = <span style="color: #4e3163;">100</span>
+<span style="color: #715ab1;">delta</span> = <span style="color: #4e3163;">0</span>.<span style="color: #4e3163;">1</span>
+</pre>
+</div></li>
+
+<li><p>
+开始仿真
+</p>
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #3a81c3; font-weight: bold;">for</span> i <span style="color: #3a81c3; font-weight: bold;">in</span> rangee<span style="color: #3a81c3;">(</span>STEPS<span style="color: #3a81c3;">)</span>:
+    <span style="color: #715ab1;">xStar</span> = xStar + delta*dK<span style="color: #3a81c3;">(</span>pStar<span style="color: #3a81c3;">)</span>
+    <span style="color: #715ab1;">pStar</span> = pStar - delta*dU<span style="color: #3a81c3;">(</span>xStar<span style="color: #3a81c3;">)</span>
+
+</pre>
+</div></li>
+
+<li><p>
+整个代码
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #3a81c3; font-weight: bold;">import</span> numpy <span style="color: #3a81c3; font-weight: bold;">as</span> np
+<span style="color: #715ab1;">SIGMA</span> = np.array<span style="color: #3a81c3;">(</span><span style="color: #6c3163;">[</span><span style="color: #2d9574;">[</span><span style="color: #4e3163;">1</span>,.<span style="color: #4e3163;">95</span><span style="color: #2d9574;">]</span>,<span style="color: #2d9574;">[</span>.<span style="color: #4e3163;">95</span>,<span style="color: #4e3163;">1</span><span style="color: #2d9574;">]</span><span style="color: #6c3163;">]</span><span style="color: #3a81c3;">)</span>
+<span style="color: #715ab1;">U</span> = <span style="color: #3a81c3; font-weight: bold;">lambda</span> x: np.dot<span style="color: #3a81c3;">(</span>x,np.dot<span style="color: #6c3163;">(</span>np.linalg.inv<span style="color: #2d9574;">(</span>SIGMA<span style="color: #2d9574;">)</span>,x<span style="color: #6c3163;">)</span><span style="color: #3a81c3;">)</span>/<span style="color: #4e3163;">2</span>
+<span style="color: #715ab1;">dU</span> = <span style="color: #3a81c3; font-weight: bold;">lambda</span> x: np.dot<span style="color: #3a81c3;">(</span>np.linalg.inv<span style="color: #6c3163;">(</span>np.array<span style="color: #2d9574;">(</span><span style="color: #67b11d;">[</span><span style="color: #b1951d;">[</span><span style="color: #4e3163;">1</span>,.<span style="color: #4e3163;">8</span><span style="color: #b1951d;">]</span>,<span style="color: #b1951d;">[</span>.<span style="color: #4e3163;">8</span>,<span style="color: #4e3163;">1</span><span style="color: #b1951d;">]</span><span style="color: #67b11d;">]</span><span style="color: #2d9574;">)</span><span style="color: #6c3163;">)</span>,x<span style="color: #3a81c3;">)</span>
+<span style="color: #715ab1;">K</span> = <span style="color: #3a81c3; font-weight: bold;">lambda</span> p: np.dot<span style="color: #3a81c3;">(</span>p,p<span style="color: #3a81c3;">)</span>/<span style="color: #4e3163;">2</span>
+<span style="color: #715ab1;">dK</span> = <span style="color: #3a81c3; font-weight: bold;">lambda</span> p: p
+<span style="color: #715ab1;">xStar</span> = np.random.randn<span style="color: #3a81c3;">(</span><span style="color: #4e3163;">2</span><span style="color: #3a81c3;">)</span>
+<span style="color: #715ab1;">pStar</span> = np.random.randn<span style="color: #3a81c3;">(</span><span style="color: #4e3163;">2</span><span style="color: #3a81c3;">)</span>
+<span style="color: #715ab1;">STEPS</span> = <span style="color: #4e3163;">100</span>
+<span style="color: #715ab1;">delta</span> = <span style="color: #4e3163;">0</span>.<span style="color: #4e3163;">1</span>
+<span style="color: #3a81c3; font-weight: bold;">for</span> i <span style="color: #3a81c3; font-weight: bold;">in</span> rangee<span style="color: #3a81c3;">(</span>STEPS<span style="color: #3a81c3;">)</span>:
+    <span style="color: #715ab1;">xStar</span> = xStar + delta*dK<span style="color: #3a81c3;">(</span>pStar<span style="color: #3a81c3;">)</span>
+    <span style="color: #715ab1;">pStar</span> = pStar - delta*dU<span style="color: #3a81c3;">(</span>xStar<span style="color: #3a81c3;">)</span>
+</pre>
+</div></li>
+</ol>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="date">Created: 2020-05-21 Thu 09:29</p>
+</div>
+</body>
+</html>

@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2020-05-21 Thu 09:35 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>&lrm;</title>
+<meta name="generator" content="Org mode" />
+<meta name="description" content="介绍如何实现稳定的（能量守恒的）哈密顿仿真"
+ />
+<meta name="keywords" content="哈密顿, Hamiltonian," />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" type="text/css" href="css/org.css"/>
+<script type="text/javascript" src="js/ga.min.js"></script>
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</head>
+<body>
+<div id="org-div-home-and-up">
+ <a accesskey="h" href="sitemap.html"> UP </a>
+ |
+ <a accesskey="H" href="index.html"> HOME </a>
+</div><div id="content">
+<p>
+根据<a href="hmc1.html">哈密顿蒙特卡洛的稳定性问题(1)</a>， 正确形式的哈密顿蒙特卡洛需要满足：1. 能量守恒，2. 正确的Metropolis算法
+</p>
+
+<ol class="org-ol">
+<li>保持能量守恒
+为了保持总能量恒定，仿真的每步都重新设置一下动量幅值大小，可参阅<a href="hmc1.html#orge5563c1">半径计算公式</a>
+<ol class="org-ol">
+<li><p>
+记录总能量
+</p>
+<div class="org-src-container">
+<pre class="src src-octave">H <span style="color: #3a81c3;">=</span> U<span style="color: #3a81c3;">(</span>xStar<span style="color: #3a81c3;">)</span> <span style="color: #3a81c3;">+</span> K<span style="color: #3a81c3;">(</span>pStar<span style="color: #3a81c3;">)</span>
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #715ab1;">H</span> = U<span style="color: #3a81c3;">(</span>xStar<span style="color: #3a81c3;">)</span> + K<span style="color: #3a81c3;">(</span>pStar<span style="color: #3a81c3;">)</span>
+</pre>
+</div></li>
+
+<li><p>
+重新设置动量半径
+</p>
+<div class="org-src-container">
+<pre class="src src-octave">pn <span style="color: #3a81c3;">=</span> sqrt<span style="color: #3a81c3;">(</span><span style="color: #4e3163;">2</span><span style="color: #3a81c3;">*</span><span style="color: #6c3163;">(</span>H <span style="color: #3a81c3;">-</span> U<span style="color: #2d9574;">(</span>xStar<span style="color: #2d9574;">)</span><span style="color: #6c3163;">)</span><span style="color: #3a81c3;">)</span><span style="color: #3a81c3;">;</span>
+pStar <span style="color: #3a81c3;">=</span> pStar<span style="color: #3a81c3;">/</span>norm<span style="color: #3a81c3;">(</span>pStar<span style="color: #3a81c3;">,</span><span style="color: #4e3163;">2</span><span style="color: #3a81c3;">)</span> <span style="color: #3a81c3;">*</span> pn<span style="color: #3a81c3;">;</span>
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #715ab1;">pn</span> = np.sqrt<span style="color: #3a81c3;">(</span><span style="color: #4e3163;">2</span>*<span style="color: #6c3163;">(</span>H - U<span style="color: #2d9574;">(</span>xStar<span style="color: #2d9574;">)</span><span style="color: #6c3163;">)</span><span style="color: #3a81c3;">)</span>
+<span style="color: #715ab1;">pStar</span> = pStar/np.linalg.norm<span style="color: #3a81c3;">(</span>pStar,<span style="color: #4e3163;">2</span><span style="color: #3a81c3;">)</span> * pn
+</pre>
+</div></li>
+</ol></li>
+
+<li>Metropolis
+<ol class="org-ol">
+<li><p>
+接受概率
+</p>
+
+<p>
+接受概率大当且仅当新位置的能量小:
+\[\alpha=\min(1, e^{U(x)-U(x_*)})\]
+</p>
+<div class="org-src-container">
+<pre class="src src-octave">alpha <span style="color: #3a81c3;">=</span> min<span style="color: #3a81c3;">(</span><span style="color: #4e3163;">1</span><span style="color: #3a81c3;">,</span>exp<span style="color: #6c3163;">(</span>U<span style="color: #2d9574;">(</span>x0<span style="color: #2d9574;">)</span> <span style="color: #3a81c3;">-</span> U<span style="color: #2d9574;">(</span>xStar<span style="color: #2d9574;">)</span><span style="color: #6c3163;">)</span><span style="color: #3a81c3;">)</span><span style="color: #3a81c3;">;</span>
+</pre>
+</div>
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #715ab1;">alpha</span> = <span style="color: #3a81c3;">min</span><span style="color: #3a81c3;">(</span><span style="color: #4e3163;">1</span>,np.exp<span style="color: #6c3163;">(</span>U<span style="color: #2d9574;">(</span>x0<span style="color: #2d9574;">)</span>  - U<span style="color: #2d9574;">(</span>xStar<span style="color: #2d9574;">)</span><span style="color: #6c3163;">)</span><span style="color: #3a81c3;">)</span>
+</pre>
+</div></li>
+
+<li><p>
+Metropolis 算法
+</p>
+<div class="org-src-container">
+<pre class="src src-octave"><span style="color: #3a81c3; font-weight: bold;">if</span> alpha <span style="color: #3a81c3;">&lt;</span> rand<span style="color: #3a81c3;">()</span>
+  xStar <span style="color: #3a81c3;">=</span> x0
+  pStar <span style="color: #3a81c3;">=</span> p0
+<span style="color: #3a81c3; font-weight: bold;">end</span>
+</pre>
+</div>
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #3a81c3; font-weight: bold;">if</span> alhpa&lt;rand<span style="color: #3a81c3;">()</span>:
+    <span style="color: #715ab1;">xStar</span> = x0
+    <span style="color: #715ab1;">pStar</span> = p0
+</pre>
+</div></li>
+</ol></li>
+
+<li><p>
+总的代码
+</p>
+<div class="org-src-container">
+<pre class="src src-octave">SIGMA<span style="color: #3a81c3;">=</span><span style="color: #3a81c3;">[</span><span style="color: #4e3163;">1</span><span style="color: #3a81c3;">,</span>.<span style="color: #4e3163;">95</span><span style="color: #3a81c3;">;</span>.<span style="color: #4e3163;">95</span><span style="color: #3a81c3;">,</span><span style="color: #4e3163;">1</span><span style="color: #3a81c3;">]</span><span style="color: #3a81c3;">;</span>
+U <span style="color: #3a81c3;">=</span> @<span style="color: #3a81c3;">(</span>x<span style="color: #3a81c3;">)</span> x<span style="color: #3a81c3;">'</span> <span style="color: #3a81c3;">*</span> inv<span style="color: #3a81c3;">(</span>SIGMA<span style="color: #3a81c3;">)</span> <span style="color: #3a81c3;">*</span> x<span style="color: #3a81c3;">/</span><span style="color: #4e3163;">2</span><span style="color: #3a81c3;">;</span>
+dU <span style="color: #3a81c3;">=</span> @<span style="color: #3a81c3;">(</span>x<span style="color: #3a81c3;">)</span> inv<span style="color: #3a81c3;">(</span>SIGMA<span style="color: #3a81c3;">)</span><span style="color: #3a81c3;">*</span>x<span style="color: #3a81c3;">;</span>
+K <span style="color: #3a81c3;">=</span> @<span style="color: #3a81c3;">(</span>x<span style="color: #3a81c3;">)</span> x<span style="color: #3a81c3;">'</span> <span style="color: #3a81c3;">*</span>  x<span style="color: #3a81c3;">/</span><span style="color: #4e3163;">2</span><span style="color: #3a81c3;">;</span>
+dK <span style="color: #3a81c3;">=</span> @<span style="color: #3a81c3;">(</span>x<span style="color: #3a81c3;">)</span> x<span style="color: #3a81c3;">;</span>
+xStar <span style="color: #3a81c3;">=</span> randn<span style="color: #3a81c3;">(</span><span style="color: #4e3163;">2</span><span style="color: #3a81c3;">,</span><span style="color: #4e3163;">1</span><span style="color: #3a81c3;">)</span><span style="color: #3a81c3;">;</span>
+pStar <span style="color: #3a81c3;">=</span> randn<span style="color: #3a81c3;">(</span><span style="color: #4e3163;">2</span><span style="color: #3a81c3;">,</span><span style="color: #4e3163;">1</span><span style="color: #3a81c3;">)</span><span style="color: #3a81c3;">;</span>
+STEPS <span style="color: #3a81c3;">=</span> <span style="color: #4e3163;">100</span><span style="color: #3a81c3;">;</span>
+delta <span style="color: #3a81c3;">=</span> <span style="color: #4e3163;">0</span>.<span style="color: #4e3163;">1</span><span style="color: #3a81c3;">;</span>
+<span style="color: #2aa1ae; background-color: #ecf3ec;">%% </span><span style="color: #2aa1ae; background-color: #ecf3ec;">&#24635;&#33021;&#37327;</span>
+H <span style="color: #3a81c3;">=</span> U<span style="color: #3a81c3;">(</span>xStar<span style="color: #3a81c3;">)</span> <span style="color: #3a81c3;">+</span> K<span style="color: #3a81c3;">(</span>pStar<span style="color: #3a81c3;">)</span><span style="color: #3a81c3;">;</span>
+<span style="color: #2aa1ae; background-color: #ecf3ec;">%% </span><span style="color: #2aa1ae; background-color: #ecf3ec;">&#20223;&#30495;&#27425;&#25968;&#65292;&#21363;&#37319;&#26679;&#27425;&#25968;</span>
+SIMULATIONS <span style="color: #3a81c3;">=</span> <span style="color: #4e3163;">100</span><span style="color: #3a81c3;">;</span>
+<span style="color: #2aa1ae; background-color: #ecf3ec;">%% </span><span style="color: #2aa1ae; background-color: #ecf3ec;">--------------------------</span>
+<span style="color: #3a81c3; font-weight: bold;">for</span> i<span style="color: #3a81c3;">=</span> <span style="color: #4e3163;">1</span><span style="color: #3a81c3;">:</span>SIMULATIONS
+  <span style="color: #2aa1ae; background-color: #ecf3ec;">%% &#37325;&#26032;&#35774;&#32622;&#21160;&#37327;&#65292;&#20351;&#24471;&#24635;&#33021;&#37327;&#24658;&#23450;</span>
+  pn <span style="color: #3a81c3;">=</span> sqrt<span style="color: #3a81c3;">(</span><span style="color: #4e3163;">2</span><span style="color: #3a81c3;">*</span><span style="color: #6c3163;">(</span>H <span style="color: #3a81c3;">-</span> U<span style="color: #2d9574;">(</span>xStar<span style="color: #2d9574;">)</span><span style="color: #6c3163;">)</span><span style="color: #3a81c3;">)</span><span style="color: #3a81c3;">;</span>
+  pStar <span style="color: #3a81c3;">=</span> randn<span style="color: #3a81c3;">(</span><span style="color: #4e3163;">2</span><span style="color: #3a81c3;">,</span><span style="color: #4e3163;">1</span><span style="color: #3a81c3;">)</span><span style="color: #3a81c3;">;</span>
+  pStar <span style="color: #3a81c3;">=</span> pStar<span style="color: #3a81c3;">/</span>norm<span style="color: #3a81c3;">(</span>pStar<span style="color: #3a81c3;">,</span><span style="color: #4e3163;">2</span><span style="color: #3a81c3;">)</span> <span style="color: #3a81c3;">*</span> pn<span style="color: #3a81c3;">;</span>
+  <span style="color: #2aa1ae; background-color: #ecf3ec;">%% &#21021;&#22987;&#20301;&#32622;</span>
+  x0 <span style="color: #3a81c3;">=</span> xStar
+  <span style="color: #2aa1ae; background-color: #ecf3ec;">%% &#24320;&#22987;&#20223;&#30495;</span>
+  <span style="color: #3a81c3; font-weight: bold;">for</span> j<span style="color: #3a81c3;">=</span> <span style="color: #4e3163;">1</span><span style="color: #3a81c3;">:</span>STEPS
+    xStar <span style="color: #3a81c3;">=</span> xStar <span style="color: #3a81c3;">+</span> delta<span style="color: #3a81c3;">*</span>dK<span style="color: #3a81c3;">(</span>pStar<span style="color: #3a81c3;">)</span><span style="color: #3a81c3;">;</span>
+    pStar <span style="color: #3a81c3;">=</span> pStar <span style="color: #3a81c3;">-</span> delta<span style="color: #3a81c3;">**</span>dU<span style="color: #3a81c3;">(</span>xStar<span style="color: #3a81c3;">)</span><span style="color: #3a81c3;">;</span>
+  <span style="color: #3a81c3; font-weight: bold;">end</span>
+  <span style="color: #2aa1ae; background-color: #ecf3ec;">%% Metropolis</span>
+  alpha <span style="color: #3a81c3;">=</span> min<span style="color: #3a81c3;">(</span><span style="color: #4e3163;">1</span><span style="color: #3a81c3;">,</span>exp<span style="color: #6c3163;">(</span>U<span style="color: #2d9574;">(</span>x0<span style="color: #2d9574;">)</span> <span style="color: #3a81c3;">-</span> U<span style="color: #2d9574;">(</span>xStar<span style="color: #2d9574;">)</span><span style="color: #6c3163;">)</span><span style="color: #3a81c3;">)</span><span style="color: #3a81c3;">;</span>
+  <span style="color: #3a81c3; font-weight: bold;">if</span> alpha <span style="color: #3a81c3;">&lt;</span> rand<span style="color: #3a81c3;">()</span>
+    xStar <span style="color: #3a81c3;">=</span> x0
+  <span style="color: #3a81c3; font-weight: bold;">end</span>
+<span style="color: #3a81c3; font-weight: bold;">end</span>
+</pre>
+</div>
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #3a81c3; font-weight: bold;">import</span> numpy <span style="color: #3a81c3; font-weight: bold;">as</span> np
+<span style="color: #3a81c3; font-weight: bold;">from</span> numpy.random <span style="color: #3a81c3; font-weight: bold;">import</span> rand
+
+<span style="color: #715ab1;">SIGMA</span> = np.array<span style="color: #3a81c3;">(</span><span style="color: #6c3163;">[</span><span style="color: #2d9574;">[</span><span style="color: #4e3163;">1</span>,.<span style="color: #4e3163;">95</span><span style="color: #2d9574;">]</span>,<span style="color: #2d9574;">[</span>.<span style="color: #4e3163;">95</span>,<span style="color: #4e3163;">1</span><span style="color: #2d9574;">]</span><span style="color: #6c3163;">]</span><span style="color: #3a81c3;">)</span>
+<span style="color: #715ab1;">U</span> = <span style="color: #3a81c3; font-weight: bold;">lambda</span> x: np.dot<span style="color: #3a81c3;">(</span>x,np.dot<span style="color: #6c3163;">(</span>np.linalg.inv<span style="color: #2d9574;">(</span>SIGMA<span style="color: #2d9574;">)</span>,x<span style="color: #6c3163;">)</span><span style="color: #3a81c3;">)</span>/<span style="color: #4e3163;">2</span>
+<span style="color: #715ab1;">dU</span> = <span style="color: #3a81c3; font-weight: bold;">lambda</span> x: np.dot<span style="color: #3a81c3;">(</span>np.linalg.inv<span style="color: #6c3163;">(</span>np.array<span style="color: #2d9574;">(</span><span style="color: #67b11d;">[</span><span style="color: #b1951d;">[</span><span style="color: #4e3163;">1</span>,.<span style="color: #4e3163;">8</span><span style="color: #b1951d;">]</span>,<span style="color: #b1951d;">[</span>.<span style="color: #4e3163;">8</span>,<span style="color: #4e3163;">1</span><span style="color: #b1951d;">]</span><span style="color: #67b11d;">]</span><span style="color: #2d9574;">)</span><span style="color: #6c3163;">)</span>,x<span style="color: #3a81c3;">)</span>
+<span style="color: #715ab1;">K</span> = <span style="color: #3a81c3; font-weight: bold;">lambda</span> p: np.dot<span style="color: #3a81c3;">(</span>p,p<span style="color: #3a81c3;">)</span>/<span style="color: #4e3163;">2</span>
+<span style="color: #715ab1;">dK</span> = <span style="color: #3a81c3; font-weight: bold;">lambda</span> p: p
+<span style="color: #715ab1;">xStar</span> = np.random.randn<span style="color: #3a81c3;">(</span><span style="color: #4e3163;">2</span><span style="color: #3a81c3;">)</span>
+<span style="color: #715ab1;">pStar</span> = np.random.randn<span style="color: #3a81c3;">(</span><span style="color: #4e3163;">2</span><span style="color: #3a81c3;">)</span>
+<span style="color: #715ab1;">STEPS</span> = <span style="color: #4e3163;">10</span>
+<span style="color: #715ab1;">delta</span> = <span style="color: #4e3163;">0</span>.<span style="color: #4e3163;">1</span>
+<span style="color: #2aa1ae; background-color: #ecf3ec;">#</span><span style="color: #2aa1ae; background-color: #ecf3ec;">&#24635;&#33021;&#37327;</span>
+<span style="color: #715ab1;">H</span> = U<span style="color: #3a81c3;">(</span>xStar<span style="color: #3a81c3;">)</span> + K<span style="color: #3a81c3;">(</span>pStar<span style="color: #3a81c3;">)</span>
+<span style="color: #2aa1ae; background-color: #ecf3ec;">#</span><span style="color: #2aa1ae; background-color: #ecf3ec;">---------------------</span>
+<span style="color: #715ab1;">SIMULATIONS</span>  = <span style="color: #4e3163;">100</span>
+<span style="color: #3a81c3; font-weight: bold;">for</span> i <span style="color: #3a81c3; font-weight: bold;">in</span> <span style="color: #3a81c3;">range</span><span style="color: #3a81c3;">(</span>SIMULATIONS<span style="color: #3a81c3;">)</span>:
+    <span style="color: #2aa1ae; background-color: #ecf3ec;">#</span><span style="color: #2aa1ae; background-color: #ecf3ec;">&#37325;&#26032;&#35774;&#32622;&#21160;&#37327;&#24133;&#20540;</span>
+    <span style="color: #715ab1;">pn</span> = np.sqrt<span style="color: #3a81c3;">(</span><span style="color: #4e3163;">2</span>*<span style="color: #6c3163;">(</span>H - U<span style="color: #2d9574;">(</span>xStar<span style="color: #2d9574;">)</span><span style="color: #6c3163;">)</span><span style="color: #3a81c3;">)</span>
+    <span style="color: #715ab1;">pStar</span> = np.random.randn<span style="color: #3a81c3;">(</span><span style="color: #4e3163;">2</span><span style="color: #3a81c3;">)</span>
+    <span style="color: #715ab1;">pStar</span> = pStar/np.linalg.norm<span style="color: #3a81c3;">(</span>pStar,<span style="color: #4e3163;">2</span><span style="color: #3a81c3;">)</span> * pn
+    <span style="color: #715ab1;">x0</span> = xStar
+    <span style="color: #3a81c3; font-weight: bold;">for</span> i <span style="color: #3a81c3; font-weight: bold;">in</span> <span style="color: #3a81c3;">range</span><span style="color: #3a81c3;">(</span>STEPS<span style="color: #3a81c3;">)</span>:
+        <span style="color: #715ab1;">xStar</span> = xStar + delta*dK<span style="color: #3a81c3;">(</span>pStar<span style="color: #3a81c3;">)</span>
+        <span style="color: #715ab1;">pStar</span> = pStar - delta*dU<span style="color: #3a81c3;">(</span>xStar<span style="color: #3a81c3;">)</span>
+    <span style="color: #715ab1;">alpha</span> = <span style="color: #3a81c3;">min</span><span style="color: #3a81c3;">(</span><span style="color: #4e3163;">1</span>,np.exp<span style="color: #6c3163;">(</span>U<span style="color: #2d9574;">(</span>x0<span style="color: #2d9574;">)</span>  - U<span style="color: #2d9574;">(</span>xStar<span style="color: #2d9574;">)</span><span style="color: #6c3163;">)</span><span style="color: #3a81c3;">)</span>
+    <span style="color: #3a81c3; font-weight: bold;">if</span> alpha &lt; rand<span style="color: #3a81c3;">()</span>:
+        <span style="color: #715ab1;">xStar</span> = x0
+</pre>
+</div></li>
+</ol>
+</div>
+<div id="postamble" class="status">
+<p class="date">Created: 2020-05-21 Thu 09:35</p>
+</div>
+</body>
+</html>
