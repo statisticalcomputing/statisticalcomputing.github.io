@@ -3,11 +3,14 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2020-05-18 Mon 21:42 -->
+<!-- 2020-05-20 Wed 21:58 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>&lrm;</title>
 <meta name="generator" content="Org mode" />
+<meta name="description" content="讨论了哈密顿蒙特卡洛的坐标变换问题"
+ />
+<meta name="keywords" content="哈密顿蒙特卡洛, 哈密顿, Hamiltonian Monte Carlo, HMC, Riemann, 坐标变换, Coordinate Transformation" />
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" type="text/css" href="css/org.css"/>
 <script type="text/javascript" src="js/ga.min.js"></script>
@@ -15,7 +18,7 @@
 </head>
 <body>
 <div id="org-div-home-and-up">
- <a accesskey="h" href="misc.html"> UP </a>
+ <a accesskey="h" href="sitemap.html"> UP </a>
  |
  <a accesskey="H" href="index.html"> HOME </a>
 </div><div id="content">
@@ -92,10 +95,10 @@
 \[\Sigma_1 = \begin{bmatrix}1&0.99\\0.99&1\\\end{bmatrix}\]
 可以得到如下仿真结果。
 本来动量应当是圆形轨迹，而位置是椭圆轨迹；但由于二者的耦合作用，使得二者的轨迹都偏离了原来的理想轨迹。即位置轨迹不再是椭圆的，动量轨迹也不再是圆形的。
+<img src="./ltximg/animation-hmc.gif" alt="animation-hmc.gif" />
 </p>
 
 <p>
-<img src="./ltximg/hmc271.png" alt="hmc271.png" />
 由于概率函数的参数等同于x变量，我们更关心空间位置轨迹的改善情况。然而此时轨迹在空间的移动速度较慢，发生了震荡现象。因此HMC的采样效果不理想。
 </p>
 </div>
@@ -111,16 +114,21 @@
 <p>
 黎曼哈密顿蒙特卡洛采用二次型的动能函数：
 \[K(p)=\frac{p^T \Sigma^{-1} p}{2}\]
-其中\[\Sigma\]矩阵与势能的二次型矩阵相同。
+其中 &Sigma; 矩阵与势能的二次型矩阵相同。
 然而这种方法的仿真效果可能比HMC的更差，它无法应用于正定矩阵&Sigma;<sub>1</sub>, 因为octave软件出现数值错误。
 </p>
 
 <p>
 如果降低要求，采用如下正定矩阵，
-\[\Sigma_2 = \begin{bmatrix}1&0.97\\0.97&1\\\end{bmatrix}\]
+\[\Sigma_2 = \begin{bmatrix}1&0.95\\0.95&1\\\end{bmatrix}\]
 可以得到如下的仿真结果:
-<img src="./ltximg/hmc26_1.png" alt="hmc26_1.png" />
 </p>
+
+
+<div class="figure">
+<p><img src="./ltximg/animation-r-w.gif" alt="animation-r-w.gif" />
+</p>
+</div>
 
 <p>
 与HMC相比，这个仿真效果不仅没有明显改善，而且可能还更差，因为它不能应用于&Sigma;<sub>1</sub>。
@@ -134,7 +142,10 @@
  如果采用如下形式的动能
 \[K(p)=\frac{p^T \Sigma^{-1} p}{2}\]
 那么仿真算法可以应用于原来的&Sigma;<sub>1</sub>，其仿真效果如下：
-<img src="./ltximg/hmc26_2.png" alt="hmc26_2.png" />
+<img src="./ltximg/animation-r.gif" alt="animation-r.gif" />
+</p>
+
+<p>
 值得指出的是，这时轨迹的震荡现象被消除了，因此抽样效果优于Riemann HMC方案1（以及HMC）。
 </p>
 
@@ -154,7 +165,10 @@
 则势能与动能，转换后的位置和动量具有对称的形式:
 \[K = \frac{p^T p}{2}\]
 将转换后的位置，动量，以及转换回去的原来的位置画在同一副图中：
-<img src="./ltximg/hmc25.png" alt="hmc25.png" />
+<img src="./ltximg/animation-g.gif" alt="animation-g.gif" />
+</p>
+
+<p>
 可以看出，轨迹与三倍标准差的界限符合的非常一致，并且转换回去的位置与&Sigma;<sub>1</sub> 的界限也完美匹配。
 </p>
 
@@ -323,7 +337,7 @@
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2020-05-18 Mon 21:42</p>
+<p class="date">Created: 2020-05-20 Wed 21:58</p>
 </div>
 </body>
 </html>
