@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2020-05-20 Wed 19:51 -->
+<!-- 2020-05-21 Thu 06:46 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>&lrm;</title>
@@ -26,9 +26,9 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#orged086af">Metropolis</a>
+<li><a href="#org14538c4">Metropolis</a>
 <ul>
-<li><a href="#org60fb1ed">Metropolis</a></li>
+<li><a href="#orgd1feb3c">Metropolis</a></li>
 <li><a href="#orge63d099">Metropolis-Hastings</a></li>
 <li><a href="#org364893f">Relation of the two Metropolis algorithm</a></li>
 </ul>
@@ -49,19 +49,42 @@
 </div>
 </div>
 <p>
-本文讨论哈密顿蒙特卡洛算法的一些问题及其解决方法。
+本文讨论哈密顿蒙特卡洛算法的稳定性问题及其解决方法。
 </p>
+
+<p>
+这里的主要思想是：一个哈密顿仿真的总能量守恒，则仿真是稳定的。
+</p>
+
+<p>
+比如如下这个仿真，红色的是位置-势能轨迹，黑色是位置轨迹，而蓝色是势能（对应概率）的三倍标准差界限。
+如果总能量守恒，则最大势能是一个常数，则仿真可以持续进行下去。
+</p>
+
+
+<div class="figure">
+<p><img src="./ltximg/hmc5.gif" alt="hmc5.gif" />
+</p>
+</div>
+
+<p>
+反之,如果总能量不守恒:
+</p>
+<ol class="org-ol">
+<li>总能量持续变大，则最大势能也会持续变大，导致仿真发散;</li>
+<li>总能量持续变小，则最大势能也会持续变小，导致仿真停止。</li>
+</ol>
 
 <p>
 受到krauth的statistical mechanics algorithm and computation的启发，我们采用类似的讨论方法，但不是石子，而是采用扔皮球的方式进行讨论，因为皮球可以在地面弹跳，而且也会有能量损失，这些特点有助于对问题的讨论。
 </p>
-<div id="outline-container-orged086af" class="outline-2">
-<h2 id="orged086af">Metropolis</h2>
-<div class="outline-text-2" id="text-orged086af">
+<div id="outline-container-org14538c4" class="outline-2">
+<h2 id="org14538c4">Metropolis</h2>
+<div class="outline-text-2" id="text-org14538c4">
 </div>
-<div id="outline-container-org60fb1ed" class="outline-3">
-<h3 id="org60fb1ed">Metropolis</h3>
-<div class="outline-text-3" id="text-org60fb1ed">
+<div id="outline-container-orgd1feb3c" class="outline-3">
+<h3 id="orgd1feb3c">Metropolis</h3>
+<div class="outline-text-3" id="text-orgd1feb3c">
 <p>
 此时从位置a扔一个皮球，假设皮球只能落在位置a,b,c，而且皮球将等可能地落在这三个位置上。
 </p>
@@ -279,7 +302,7 @@
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2020-05-20 Wed 19:51</p>
+<p class="date">Created: 2020-05-21 Thu 06:46</p>
 </div>
 </body>
 </html>
