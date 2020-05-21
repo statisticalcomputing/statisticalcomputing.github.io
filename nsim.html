@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2020-05-21 Thu 17:41 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>&lrm;</title>
+<meta name="generator" content="Org mode" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" type="text/css" href="css/org.css"/>
+<script type="text/javascript" src="js/ga.min.js"></script>
+</head>
+<body>
+<div id="org-div-home-and-up">
+ <a accesskey="h" href="sitemap.html"> UP </a>
+ |
+ <a accesskey="H" href="index.html"> HOME </a>
+</div><div id="content">
+<p>
+同时运行多个仿真是多粒子仿真的第一步，相当于每个粒子单独仿真，粒子之间没有碰撞，而且每个例子的总能量不同，且相对固定。
+以下为50个粒子的仿真，利用数值计算库，其仿真速度与单粒子几乎一样快。
+</p>
+
+<p>
+<img src="./ltximg/hmc5_n.gif" alt="hmc5_n.gif" />]]
+</p>
+
+<p>
+多个仿真与单一的哈密顿仿真非常类似：能量函数返回多个能量值而不是标量，梯度返回矩阵而不是向量。
+因此需要将矩阵内积改为相乘再相加来实现。
+</p>
+
+<ol class="org-ol">
+<li><p>
+势能
+</p>
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #3a81c3; font-weight: bold;">def</span> <span style="color: #6c3163; font-weight: bold;">U</span><span style="color: #3a81c3;">(</span>x<span style="color: #3a81c3;">)</span>:
+    <span style="color: #2aa1ae;">""" Potential energy """</span>
+    <span style="color: #3a81c3; font-weight: bold;">return</span> np.<span style="color: #3a81c3;">sum</span><span style="color: #3a81c3;">(</span>x * np.linalg.solve<span style="color: #6c3163;">(</span>SIGMA,x<span style="color: #6c3163;">)</span>, axis = <span style="color: #4e3163;">0</span><span style="color: #3a81c3;">)</span>/<span style="color: #4e3163;">2</span>
+
+<span style="color: #3a81c3; font-weight: bold;">def</span> <span style="color: #6c3163; font-weight: bold;">dU</span><span style="color: #3a81c3;">(</span>x<span style="color: #3a81c3;">)</span>:
+    <span style="color: #3a81c3; font-weight: bold;">return</span> np.linalg.solve<span style="color: #3a81c3;">(</span>SIGMA, x<span style="color: #3a81c3;">)</span>
+</pre>
+</div></li>
+
+<li><p>
+动能
+</p>
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #3a81c3; font-weight: bold;">def</span> <span style="color: #6c3163; font-weight: bold;">K</span><span style="color: #3a81c3;">(</span>p<span style="color: #3a81c3;">)</span>:
+     <span style="color: #2aa1ae;">""" Kinematic energy """</span>
+     <span style="color: #3a81c3; font-weight: bold;">return</span> np.<span style="color: #3a81c3;">sum</span><span style="color: #3a81c3;">(</span>p*p, axis=<span style="color: #4e3163;">0</span><span style="color: #3a81c3;">)</span>/<span style="color: #4e3163;">2</span>
+
+ <span style="color: #3a81c3; font-weight: bold;">def</span> <span style="color: #6c3163; font-weight: bold;">dK</span><span style="color: #3a81c3;">(</span>p<span style="color: #3a81c3;">)</span>:
+     <span style="color: #2aa1ae;">""" Kinematic energy """</span>
+     <span style="color: #3a81c3; font-weight: bold;">return</span> p
+</pre>
+</div></li>
+
+<li><p>
+初始化
+</p>
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #715ab1;">POINTS</span> = <span style="color: #4e3163;">50</span>
+<span style="color: #715ab1;">xStar</span> = np.random.randn<span style="color: #3a81c3;">(</span><span style="color: #4e3163;">2</span>, POINTS<span style="color: #3a81c3;">)</span>
+<span style="color: #715ab1;">pStar</span> = np.random.randn<span style="color: #3a81c3;">(</span><span style="color: #4e3163;">2</span>, POINTS<span style="color: #3a81c3;">)</span>
+</pre>
+</div></li>
+</ol>
+</div>
+<div id="postamble" class="status">
+<p class="date">Created: 2020-05-21 Thu 17:41</p>
+</div>
+</body>
+</html>
