@@ -6,7 +6,7 @@
 <!-- 2020-05-22 Fri 09:16 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Sitemap</title>
+<title>&lrm;</title>
 <meta name="generator" content="Org mode" />
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" type="text/css" href="css/org.css"/>
@@ -18,17 +18,25 @@
  |
  <a accesskey="H" href="index.html"> HOME </a>
 </div><div id="content">
-<h1 class="title">Sitemap</h1>
-<ul class="org-ul">
-<li><a href="ghmc.html">ghmc</a></li>
-<li><a href="hmc1.html">hmc1</a></li>
-<li><a href="hmc2.html">hmc2</a></li>
-<li><a href="imp1.html">imp1</a></li>
-<li><a href="imp2.html">imp2</a></li>
-<li><a href="index.html">index</a></li>
-<li><a href="nparts.html">nparts</a></li>
-<li><a href="nsim.html">nsim</a></li>
-</ul>
+<p>
+多粒子哈密顿仿真:
+</p>
+<ol class="org-ol">
+<li>粒子之间在碰撞过程中有能量交换。</li>
+<li>每个粒子独立仿真</li>
+<li>在不碰撞的守恒单独粒子的总能量守恒</li>
+<li>所有粒子的总能量之和守恒</li>
+<li>没有设置系统边界</li>
+</ol>
+
+<p>
+实现krauth的书中算法。
+</p>
+
+<p>
+黑色虚线为概率的三倍标准差边界
+<img src="./ltximg/hmc5_particles.gif" alt="hmc5_particles.gif" />
+</p>
 </div>
 <div id="postamble" class="status">
 <p class="date">Created: 2020-05-22 Fri 09:16</p>
