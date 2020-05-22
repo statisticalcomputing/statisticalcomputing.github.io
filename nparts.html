@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2020-05-22 Fri 09:16 -->
+<!-- 2020-05-22 Fri 09:24 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>&lrm;</title>
@@ -18,6 +18,18 @@
  |
  <a accesskey="H" href="index.html"> HOME </a>
 </div><div id="content">
+<p>
+哈密顿蒙特卡洛一般都是基于单粒子仿真，其缺陷在于：
+</p>
+<ol class="org-ol">
+<li>对于能量守恒的仿真，难以确定能量级别。</li>
+<li>对于能量可变（即不守恒）的仿真（常规HMC），难以保证仿真稳定。</li>
+</ol>
+
+<p>
+如果采用多粒子仿真，则能量可以在各个粒子之间交换，算法不必单独为粒子设置能量级别。所有粒子总能量之和恒定，保证了算法的稳定。
+</p>
+
 <p>
 多粒子哈密顿仿真:
 </p>
@@ -39,7 +51,7 @@
 </p>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2020-05-22 Fri 09:16</p>
+<p class="date">Created: 2020-05-22 Fri 09:24</p>
 </div>
 </body>
 </html>
