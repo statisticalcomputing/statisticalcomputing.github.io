@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2020-05-21 Thu 17:44 -->
+<!-- 2020-05-22 Fri 12:13 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>&lrm;</title>
@@ -19,8 +19,26 @@
  <a accesskey="H" href="index.html"> HOME </a>
 </div><div id="content">
 <p>
+哈密顿蒙特卡洛一般都是基于单粒子仿真，其缺陷在于：
+</p>
+<ol class="org-ol">
+<li>对于能量守恒的仿真，难以确定能量级别。</li>
+<li>对于能量可变（即不守恒）的仿真（常规HMC），难以保证仿真稳定。</li>
+</ol>
+
+<p>
+如果采用多粒子仿真，则能量可以在各个粒子之间交换，算法不必单独为粒子设置能量级别。所有粒子总能量之和恒定，保证了算法的稳定。
+</p>
+
+
+<ol class="org-ol">
+<li><p>
+无碰撞
+</p>
+
+<p>
 同时运行多个仿真是多粒子仿真的第一步，相当于每个粒子单独仿真，粒子之间没有碰撞，而且每个例子的总能量不同，且相对固定。
-以下为50个粒子的仿真，利用数值计算库，其仿真速度与单粒子几乎一样快。
+以下为50个粒子的仿真。
 </p>
 
 
@@ -71,10 +89,41 @@
 <span style="color: #715ab1;">pStar</span> = np.random.randn<span style="color: #3a81c3;">(</span><span style="color: #4e3163;">2</span>, POINTS<span style="color: #3a81c3;">)</span>
 </pre>
 </div></li>
+</ol></li>
+
+<li><p>
+碰撞反弹
+</p>
+<ol class="org-ol">
+<li>计算粒子之间预计碰撞的时间</li>
+<li>仿真到碰撞时间</li>
+<li>计算碰撞后的动量，并改变粒子动量</li>
+<li>继续下一次仿真</li>
+</ol>
+
+<p>
+多粒子哈密顿仿真:
+</p>
+<ul class="org-ul">
+<li>粒子之间在碰撞过程中有能量交换。</li>
+<li>每个粒子独立仿真</li>
+<li>在不碰撞的时候单独粒子的总能量守恒</li>
+<li>所有粒子的总能量之和守恒</li>
+<li>没有设置系统边界</li>
+</ul>
+
+<p>
+实现krauth的书中算法。
+</p>
+
+<p>
+黑色虚线为概率的三倍标准差边界
+<img src="./ltximg/hmc5_particles.gif" alt="hmc5_particles.gif" />
+</p></li>
 </ol>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2020-05-21 Thu 17:44</p>
+<p class="date">Created: 2020-05-22 Fri 12:13</p>
 </div>
 </body>
 </html>
