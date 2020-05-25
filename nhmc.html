@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2020-05-25 Mon 09:13 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>&lrm;</title>
+<meta name="generator" content="Org mode" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" type="text/css" href="css/org.css"/>
+<script type="text/javascript" src="js/ga.min.js"></script>
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</head>
+<body>
+<div id="org-div-home-and-up">
+ <a accesskey="h" href="sitemap.html"> UP </a>
+ |
+ <a accesskey="H" href="index.html"> HOME </a>
+</div><div id="content">
+<p>
+在《<a href="nsim.html">多粒子哈密顿仿真》</a>一文中，我们讨论了带粒子碰撞的哈密顿仿真。本来准备沿着这个方向继续开展研究，然而通过分析发现碰撞方案有问题。
+</p>
+
+<p>
+粒子碰撞的确能交换能量，这使得不同的粒子具有不同的并且可以变化的总能量。多样化的总能量使得算法不必押宝于一个单一的总能量。
+</p>
+
+<p>
+然而这也带来了一个弊端，一个粒子碰撞前后的总能量不同，不能再假设碰撞前后两个状态之间的相互跳转概率相同。因此无法再利用《<a href="imp1.html">实现哈密顿蒙特卡洛(1)</a>》中介绍的接受概率公式，因此也就无法实现正确的抽样。
+</p>
+
+<p>
+为了解决这个问题，我们只需要使得“碰撞”前后的任何状态都等概率出现即可。因此可以实现一个虚拟的“碰撞”，实质上是重新分配能量，使得其出现的概率相同,其目的是实现等概率跳转。
+</p>
+
+<p>
+具体过程可以借助于物理模型，进行说明。
+</p>
+
+<p>
+假设系统有N个粒子，每个粒子有3个坐标和3个动量，因此系统总共有6N个维度。
+</p>
+
+<p>
+所有粒子的动能和势能之和为已知常数:
+</p>
+
+<p>
+\[\sum\limits_{i=1}^N \frac{p_{i1}^2+p_{i2}^2+p_{i3}^2}{2}+U(q_{i1},q_{i2},q_{i3})=\text{const.}\]
+</p>
+
+<p>
+对于已知所有粒子位置的情况下，约束变为：
+</p>
+
+<p>
+\[\sum\limits_{i=1}^N \frac{p_{i1}^2+p_{i2}^2+p_{i3}^2}{2}=\text{c}.\]
+</p>
+
+<p>
+3N个动量标量是对称的，在位置确定的情况下，这些动量值均匀分布分布位于一个3n-1的超球上。
+</p>
+
+<p>
+如果“碰撞”后的动量从这个3n-1超球上均匀选取的话，就能保证从任何一个动量（状态1）到任意其它动量(状态２)的跳转概率相同。在碰撞后，经过一个哈密顿仿真，从状态2再跳转到状态3。由于哈密顿仿真不改变总能量，因此状态2和状态3的总能量相同，状态2和状态3的相互跳转概率相同。因此状态1和状态3之间的相互跳转概率相同。
+从而仍然可以利用接受概率公式进行抽样。
+</p>
+
+
+<div class="figure">
+<p><img src="ltximg/2step.png" alt="2step.png" />
+</p>
+</div>
+
+<p>
+至此，我们就到达了一个重要的分水岭位置，即我们可以实现多个粒子的哈密顿蒙特卡洛抽样，而且不必实现粒子的碰撞检测算法。
+</p>
+
+<p>
+与以前一样，我们仍然需要设置总能量，但此时只需要设置所有粒子的总能量之和，这个总能量在各个粒子之间的分配则是由算法自动实现的。显然这比为单独粒子设置总能量要稳定得多。
+</p>
+
+<p>
+实现的代码片段如下：
+</p>
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #715ab1;">xStar</span> = x<span style="color: #3a81c3;">[</span>-<span style="color: #4e3163;">1</span><span style="color: #3a81c3;">]</span>
+<span style="color: #2aa1ae; background-color: #ecf3ec;"># </span><span style="color: #2aa1ae; background-color: #ecf3ec;">&#37325;&#26032;&#29983;&#25104;&#21160;&#37327;</span>
+<span style="color: #715ab1;">p0</span> = np.random.randn<span style="color: #3a81c3;">(</span>D, POINTS<span style="color: #3a81c3;">)</span>
+<span style="color: #2aa1ae; background-color: #ecf3ec;"># </span><span style="color: #2aa1ae; background-color: #ecf3ec;">&#35745;&#31639;&#21407;&#26469;&#30340;&#24635;&#21183;&#33021;&#21644;&#26032;&#30340;&#24635;&#21183;&#33021;</span>
+<span style="color: #715ab1;">K0</span> = H - U<span style="color: #3a81c3;">(</span>xStar<span style="color: #3a81c3;">)</span>.<span style="color: #3a81c3;">sum</span><span style="color: #3a81c3;">()</span>
+<span style="color: #715ab1;">K1</span> = K<span style="color: #3a81c3;">(</span>p0<span style="color: #3a81c3;">)</span>.<span style="color: #3a81c3;">sum</span><span style="color: #3a81c3;">()</span>
+<span style="color: #2aa1ae; background-color: #ecf3ec;"># </span><span style="color: #2aa1ae; background-color: #ecf3ec;">&#35774;&#32622;&#21160;&#37327;&#21322;&#24452;</span>
+<span style="color: #715ab1;">r0</span> = np.sqrt<span style="color: #3a81c3;">(</span>K1/K0<span style="color: #3a81c3;">)</span>
+<span style="color: #715ab1;">pStar</span> = p0 / r0
+
+<span style="color: #2aa1ae; background-color: #ecf3ec;"># </span><span style="color: #2aa1ae; background-color: #ecf3ec;">&#22522;&#20110;&#20301;&#32622;&#21464;&#21270;&#30340;&#21704;&#23494;&#39039;&#20223;&#30495;</span>
+<span style="color: #715ab1;">zStar</span> = x2z<span style="color: #3a81c3;">(</span>xStar<span style="color: #3a81c3;">)</span>
+<span style="color: #715ab1;">E</span> = <span style="color: #3a81c3;">[</span>U<span style="color: #6c3163;">(</span>xStar<span style="color: #6c3163;">)</span><span style="color: #3a81c3;">]</span>
+<span style="color: #3a81c3; font-weight: bold;">for</span> s <span style="color: #3a81c3; font-weight: bold;">in</span> <span style="color: #3a81c3;">range</span><span style="color: #3a81c3;">(</span>STEPS<span style="color: #3a81c3;">)</span>:
+    <span style="color: #715ab1;">zStar</span> = zStar + dt*dK<span style="color: #3a81c3;">(</span>pStar<span style="color: #3a81c3;">)</span>
+    <span style="color: #715ab1;">pStar</span> = pStar - dt*np.dot<span style="color: #3a81c3;">(</span>cov_hat_half, dU<span style="color: #6c3163;">(</span>z2x<span style="color: #2d9574;">(</span>zStar<span style="color: #2d9574;">)</span><span style="color: #6c3163;">)</span><span style="color: #3a81c3;">)</span>
+</pre>
+</div>
+
+<p>
+如果采用<a href="ghmc.html#orgc886722">基于坐标变换的哈密顿蒙特卡洛</a>文中相同的设置，我们就会又多得到几位数字精度。
+</p>
+
+
+<div class="figure">
+<p><img src="./ltximg/ghmc_multi.png" alt="ghmc_multi.png" />
+</p>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="date">Created: 2020-05-25 Mon 09:13</p>
+</div>
+</body>
+</html>
