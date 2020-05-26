@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2020-05-26 Tue 10:45 -->
+<!-- 2020-05-26 Tue 11:16 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>&lrm;</title>
@@ -115,33 +115,16 @@
 </p>
 
 <div class="org-src-container">
-<pre class="src src-python"><span style="color: #715ab1;">dt</span> = .<span style="color: #4e3163;">000001</span>
-<span style="color: #715ab1;">POINTS</span> = <span style="color: #4e3163;">100</span>
-<span style="color: #715ab1;">EPISODE</span> = <span style="color: #4e3163;">10000</span>
-<span style="color: #715ab1;">BURNIN</span> = <span style="color: #3a81c3;">int</span><span style="color: #3a81c3;">(</span>EPISODE/<span style="color: #4e3163;">2</span><span style="color: #3a81c3;">)</span>
-<span style="color: #715ab1;">R</span> = <span style="color: #4e3163;">0</span>.<span style="color: #4e3163;">2</span>
-<span style="color: #715ab1;">D</span> = <span style="color: #4e3163;">2</span>
-<span style="color: #715ab1;">n</span> = POINTS
-<span style="color: #715ab1;">STEPS</span> = <span style="color: #4e3163;">5</span>
-
-<span style="color: #715ab1;">K</span> = <span style="color: #3a81c3;">[</span>.<span style="color: #4e3163;">9</span>, .<span style="color: #4e3163;">99</span>, .<span style="color: #4e3163;">999</span>, .<span style="color: #4e3163;">9999</span>, .<span style="color: #4e3163;">99999</span>, .<span style="color: #4e3163;">999999</span>, .<span style="color: #4e3163;">9999999</span>, .<span style="color: #4e3163;">99999999</span>, .<span style="color: #4e3163;">999999999</span>, .<span style="color: #4e3163;">9999999999</span>,<span style="color: #3a81c3;">]</span>
-<span style="color: #715ab1;">ds</span> = <span style="color: #3a81c3;">[]</span>
+<pre class="src src-python"><span style="color: #715ab1;">K</span> = <span style="color: #3a81c3;">[</span>.<span style="color: #4e3163;">9</span>, .<span style="color: #4e3163;">99</span>, .<span style="color: #4e3163;">999</span>, .<span style="color: #4e3163;">9999</span>, .<span style="color: #4e3163;">99999</span>, .<span style="color: #4e3163;">999999</span>, .<span style="color: #4e3163;">9999999</span>, .<span style="color: #4e3163;">99999999</span>, .<span style="color: #4e3163;">999999999</span>, .<span style="color: #4e3163;">9999999999</span>,<span style="color: #3a81c3;">]</span>
 <span style="color: #3a81c3; font-weight: bold;">for</span> i <span style="color: #3a81c3; font-weight: bold;">in</span> <span style="color: #3a81c3;">range</span><span style="color: #3a81c3;">(</span><span style="color: #3a81c3;">len</span><span style="color: #6c3163;">(</span>K<span style="color: #6c3163;">)</span><span style="color: #3a81c3;">)</span>:
     <span style="color: #715ab1;">k</span> = K<span style="color: #3a81c3;">[</span>i<span style="color: #3a81c3;">]</span>
     <span style="color: #715ab1;">SIGMA</span> = np.array<span style="color: #3a81c3;">(</span><span style="color: #6c3163;">[</span><span style="color: #2d9574;">[</span><span style="color: #4e3163;">1</span>, k<span style="color: #2d9574;">]</span>,<span style="color: #2d9574;">[</span>k, <span style="color: #4e3163;">1</span><span style="color: #2d9574;">]</span><span style="color: #6c3163;">]</span><span style="color: #3a81c3;">)</span>
     <span style="color: #715ab1;">U</span> = <span style="color: #3a81c3; font-weight: bold;">lambda</span> x: np.<span style="color: #3a81c3;">sum</span><span style="color: #3a81c3;">(</span>x * np.linalg.solve<span style="color: #6c3163;">(</span>SIGMA,x<span style="color: #6c3163;">)</span>, axis = <span style="color: #4e3163;">0</span><span style="color: #3a81c3;">)</span>/<span style="color: #4e3163;">2</span>
     <span style="color: #715ab1;">dU</span> = <span style="color: #3a81c3; font-weight: bold;">lambda</span> x: np.linalg.solve<span style="color: #3a81c3;">(</span>SIGMA, x<span style="color: #3a81c3;">)</span>
 
-    np.random.seed<span style="color: #3a81c3;">(</span><span style="color: #4e3163;">12345</span><span style="color: #3a81c3;">)</span>
     <span style="color: #715ab1;">info</span> = ghmc<span style="color: #3a81c3;">(</span>U, dU, D=D, dt=dt,EPISODE=EPISODE, POINTS=POINTS,VERBOSE=<span style="color: #4e3163;">False</span><span style="color: #3a81c3;">)</span>
     <span style="color: #715ab1;">x</span> = info<span style="color: #3a81c3;">[</span><span style="color: #2d9574;">'x'</span><span style="color: #3a81c3;">]</span>
-    <span style="color: #715ab1;">d0</span> = np.<span style="color: #3a81c3;">sum</span><span style="color: #3a81c3;">(</span>np.square<span style="color: #6c3163;">(</span>np.cov<span style="color: #2d9574;">(</span>np.transpose<span style="color: #67b11d;">(</span>x<span style="color: #b1951d;">[</span><span style="color: #3a81c3;">int</span><span style="color: #3a81c3;">(</span>POINTS*EPISODE/<span style="color: #4e3163;">2</span><span style="color: #3a81c3;">)</span>:,:<span style="color: #b1951d;">]</span><span style="color: #67b11d;">)</span><span style="color: #2d9574;">)</span> - SIGMA<span style="color: #6c3163;">)</span><span style="color: #3a81c3;">)</span>
-    ds.append<span style="color: #3a81c3;">(</span>d0<span style="color: #3a81c3;">)</span>
-    plt.plot<span style="color: #3a81c3;">(</span>ds,<span style="color: #2d9574;">'o-'</span><span style="color: #3a81c3;">)</span>
-    plt.xlabel<span style="color: #3a81c3;">(</span><span style="color: #2d9574;">'k'</span><span style="color: #3a81c3;">)</span>
-    plt.xticks<span style="color: #3a81c3;">(</span><span style="color: #3a81c3;">list</span><span style="color: #6c3163;">(</span><span style="color: #3a81c3;">range</span><span style="color: #2d9574;">(</span><span style="color: #3a81c3;">len</span><span style="color: #67b11d;">(</span>K<span style="color: #67b11d;">)</span><span style="color: #2d9574;">)</span><span style="color: #6c3163;">)</span>, <span style="color: #6c3163;">[</span><span style="color: #3a81c3;">str</span><span style="color: #2d9574;">(</span>i<span style="color: #2d9574;">)</span> <span style="color: #3a81c3; font-weight: bold;">for</span> i <span style="color: #3a81c3; font-weight: bold;">in</span> K<span style="color: #6c3163;">]</span>, rotation=<span style="color: #4e3163;">20</span><span style="color: #3a81c3;">)</span>
-    plt.ylabel<span style="color: #3a81c3;">(</span>r<span style="color: #2d9574;">'$\left|\Sigma - \hat \Sigma\right|$'</span><span style="color: #3a81c3;">)</span>
-    plt.show<span style="color: #3a81c3;">()</span>
+    <span style="color: #715ab1;">d</span> = np.<span style="color: #3a81c3;">sum</span><span style="color: #3a81c3;">(</span>np.square<span style="color: #6c3163;">(</span>np.cov<span style="color: #2d9574;">(</span>np.transpose<span style="color: #67b11d;">(</span>x<span style="color: #b1951d;">[</span><span style="color: #3a81c3;">int</span><span style="color: #3a81c3;">(</span>POINTS*EPISODE/<span style="color: #4e3163;">2</span><span style="color: #3a81c3;">)</span>:,:<span style="color: #b1951d;">]</span><span style="color: #67b11d;">)</span><span style="color: #2d9574;">)</span> - SIGMA<span style="color: #6c3163;">)</span><span style="color: #3a81c3;">)</span>
 </pre>
 </div>
 
@@ -154,9 +137,13 @@
 <p><img src="./ltximg/ghmc_multi.png" alt="ghmc_multi.png" />
 </p>
 </div>
+
+<p>
+<a href="https:github.com/statisticalcomputing/Gaussian-Hamiltonian-Monte-Carlo/blob/master/ghmc_multi.py">代码</a>
+</p>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2020-05-26 Tue 10:45</p>
+<p class="date">Created: 2020-05-26 Tue 11:16</p>
 </div>
 </body>
 </html>
