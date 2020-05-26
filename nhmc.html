@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2020-05-25 Mon 09:22 -->
+<!-- 2020-05-26 Tue 10:23 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>&lrm;</title>
@@ -20,7 +20,7 @@
  <a accesskey="H" href="index.html"> HOME </a>
 </div><div id="content">
 <p>
-在《<a href="nsim.html">多粒子哈密顿仿真》</a>一文中，我们讨论了带粒子碰撞的哈密顿仿真。本来准备沿着这个方向继续开展研究，然而通过分析发现碰撞方案有问题。
+在《<a href="nsim.html">多粒子哈密顿仿真》</a>一文中，我们讨论了带粒子碰撞的哈密顿仿真，但没有涉及抽样。
 </p>
 
 <p>
@@ -111,7 +111,42 @@
 </p>
 
 <p>
-如果采用<a href="ghmc.html#orgc886722">基于坐标变换的哈密顿蒙特卡洛</a>文中相同的设置，我们就会又多得到几位数字精度。
+以下是驱动代码。采用的衡量标准是估计的协方差和真值之间的距离。这种方式可能不够理想，但属于定量比较，因此更为客观。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #715ab1;">dt</span> = .<span style="color: #4e3163;">000001</span>
+<span style="color: #715ab1;">POINTS</span> = <span style="color: #4e3163;">100</span>
+<span style="color: #715ab1;">EPISODE</span> = <span style="color: #4e3163;">10000</span>
+<span style="color: #715ab1;">BURNIN</span> = <span style="color: #3a81c3;">int</span><span style="color: #3a81c3;">(</span>EPISODE/<span style="color: #4e3163;">2</span><span style="color: #3a81c3;">)</span>
+<span style="color: #715ab1;">R</span> = <span style="color: #4e3163;">0</span>.<span style="color: #4e3163;">2</span>
+<span style="color: #715ab1;">D</span> = <span style="color: #4e3163;">2</span>
+<span style="color: #715ab1;">n</span> = POINTS
+<span style="color: #715ab1;">STEPS</span> = <span style="color: #4e3163;">5</span>
+
+<span style="color: #715ab1;">K</span> = <span style="color: #3a81c3;">[</span>.<span style="color: #4e3163;">9</span>, .<span style="color: #4e3163;">99</span>, .<span style="color: #4e3163;">999</span>, .<span style="color: #4e3163;">9999</span>, .<span style="color: #4e3163;">99999</span>, .<span style="color: #4e3163;">999999</span>, .<span style="color: #4e3163;">9999999</span>, .<span style="color: #4e3163;">99999999</span>, .<span style="color: #4e3163;">999999999</span>, .<span style="color: #4e3163;">9999999999</span>,<span style="color: #3a81c3;">]</span>
+<span style="color: #715ab1;">ds</span> = <span style="color: #3a81c3;">[]</span>
+<span style="color: #3a81c3; font-weight: bold;">for</span> i <span style="color: #3a81c3; font-weight: bold;">in</span> <span style="color: #3a81c3;">range</span><span style="color: #3a81c3;">(</span><span style="color: #3a81c3;">len</span><span style="color: #6c3163;">(</span>K<span style="color: #6c3163;">)</span><span style="color: #3a81c3;">)</span>:
+    <span style="color: #715ab1;">k</span> = K<span style="color: #3a81c3;">[</span>i<span style="color: #3a81c3;">]</span>
+    <span style="color: #715ab1;">SIGMA</span> = np.array<span style="color: #3a81c3;">(</span><span style="color: #6c3163;">[</span><span style="color: #2d9574;">[</span><span style="color: #4e3163;">1</span>, k<span style="color: #2d9574;">]</span>,<span style="color: #2d9574;">[</span>k, <span style="color: #4e3163;">1</span><span style="color: #2d9574;">]</span><span style="color: #6c3163;">]</span><span style="color: #3a81c3;">)</span>
+    <span style="color: #715ab1;">U</span> = <span style="color: #3a81c3; font-weight: bold;">lambda</span> x: np.<span style="color: #3a81c3;">sum</span><span style="color: #3a81c3;">(</span>x * np.linalg.solve<span style="color: #6c3163;">(</span>SIGMA,x<span style="color: #6c3163;">)</span>, axis = <span style="color: #4e3163;">0</span><span style="color: #3a81c3;">)</span>/<span style="color: #4e3163;">2</span>
+    <span style="color: #715ab1;">dU</span> = <span style="color: #3a81c3; font-weight: bold;">lambda</span> x: np.linalg.solve<span style="color: #3a81c3;">(</span>SIGMA, x<span style="color: #3a81c3;">)</span>
+
+    np.random.seed<span style="color: #3a81c3;">(</span><span style="color: #4e3163;">12345</span><span style="color: #3a81c3;">)</span>
+    <span style="color: #715ab1;">info</span> = ghmc<span style="color: #3a81c3;">(</span>U, dU, D=D, dt=dt,EPISODE=EPISODE, POINTS=POINTS,VERBOSE=<span style="color: #4e3163;">False</span><span style="color: #3a81c3;">)</span>
+    <span style="color: #715ab1;">x</span> = info<span style="color: #3a81c3;">[</span><span style="color: #2d9574;">'x'</span><span style="color: #3a81c3;">]</span>
+    <span style="color: #715ab1;">d0</span> = np.<span style="color: #3a81c3;">sum</span><span style="color: #3a81c3;">(</span>np.square<span style="color: #6c3163;">(</span>np.cov<span style="color: #2d9574;">(</span>np.transpose<span style="color: #67b11d;">(</span>x<span style="color: #b1951d;">[</span><span style="color: #3a81c3;">int</span><span style="color: #3a81c3;">(</span>POINTS*EPISODE/<span style="color: #4e3163;">2</span><span style="color: #3a81c3;">)</span>:,:<span style="color: #b1951d;">]</span><span style="color: #67b11d;">)</span><span style="color: #2d9574;">)</span> - SIGMA<span style="color: #6c3163;">)</span><span style="color: #3a81c3;">)</span>
+    ds.append<span style="color: #3a81c3;">(</span>d0<span style="color: #3a81c3;">)</span>
+    plt.plot<span style="color: #3a81c3;">(</span>ds,<span style="color: #2d9574;">'o-'</span><span style="color: #3a81c3;">)</span>
+    plt.xlabel<span style="color: #3a81c3;">(</span><span style="color: #2d9574;">'k'</span><span style="color: #3a81c3;">)</span>
+    plt.xticks<span style="color: #3a81c3;">(</span><span style="color: #3a81c3;">list</span><span style="color: #6c3163;">(</span><span style="color: #3a81c3;">range</span><span style="color: #2d9574;">(</span><span style="color: #3a81c3;">len</span><span style="color: #67b11d;">(</span>K<span style="color: #67b11d;">)</span><span style="color: #2d9574;">)</span><span style="color: #6c3163;">)</span>, <span style="color: #6c3163;">[</span><span style="color: #3a81c3;">str</span><span style="color: #2d9574;">(</span>i<span style="color: #2d9574;">)</span> <span style="color: #3a81c3; font-weight: bold;">for</span> i <span style="color: #3a81c3; font-weight: bold;">in</span> K<span style="color: #6c3163;">]</span>, rotation=<span style="color: #4e3163;">20</span><span style="color: #3a81c3;">)</span>
+    plt.ylabel<span style="color: #3a81c3;">(</span>r<span style="color: #2d9574;">'$\left|\Sigma - \hat \Sigma\right|$'</span><span style="color: #3a81c3;">)</span>
+    plt.show<span style="color: #3a81c3;">()</span>
+</pre>
+</div>
+
+<p>
+如果与<a href="ghmc.html#orgc886722">基于坐标变换的哈密顿蒙特卡洛</a>文中的实验结果进行对比，就会发现，又多得到几位数字精度。
 </p>
 
 
@@ -121,7 +156,7 @@
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2020-05-25 Mon 09:22</p>
+<p class="date">Created: 2020-05-26 Tue 10:23</p>
 </div>
 </body>
 </html>

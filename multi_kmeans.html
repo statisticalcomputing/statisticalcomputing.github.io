@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2020-05-25 Mon 16:45 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>&lrm;</title>
+<meta name="generator" content="Org mode" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" type="text/css" href="css/org.css"/>
+<script type="text/javascript" src="js/ga.min.js"></script>
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</head>
+<body>
+<div id="org-div-home-and-up">
+ <a accesskey="h" href="sitemap.html"> UP </a>
+ |
+ <a accesskey="H" href="index.html"> HOME </a>
+</div><div id="content">
+<p>
+本文是在研究哈密顿蒙特卡洛中碰撞问题时的一个聚类的想法。虽然不再使用碰撞的方式研究hmc，然而将这个想法记录下来，因为可能用于其它方面。
+</p>
+
+<p>
+在多粒子碰撞的过程中，如果有1000个粒子，如果每次都计算这些粒子之间的碰撞，那么计算量会很大。如果将粒子分成小组，然后计算小组内碰撞，那么总的计算量将会大为降低，其代价是不够准确。
+</p>
+
+<p>
+因此首先可以将整个样本空间分为两类，随后每类又分为两类，以此类推。如果一组样本无法分为两类，或者样本个数小于阈值，则停止对其分类。
+</p>
+
+<p>
+以下例子首先生成16个中心的二维样本，然后用8层算法进行聚类。8层有能力聚成 \(2^8=256\) 个类。而聚类算法实际聚成15个类别，非常接近于原始的中心个数。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #3a81c3; font-weight: bold;">import</span> numpy <span style="color: #3a81c3; font-weight: bold;">as</span> np
+<span style="color: #3a81c3; font-weight: bold;">from</span> random <span style="color: #3a81c3; font-weight: bold;">import</span> randrange
+<span style="color: #3a81c3; font-weight: bold;">import</span> matplotlib.pylab <span style="color: #3a81c3; font-weight: bold;">as</span> plt
+<span style="color: #3a81c3; font-weight: bold;">from</span> sklearn.datasets <span style="color: #3a81c3; font-weight: bold;">import</span> make_blobs
+
+<span style="color: #715ab1;">LAYERS</span> = <span style="color: #4e3163;">8</span>
+<span style="color: #715ab1;">POINTS</span> = <span style="color: #4e3163;">1000</span>
+<span style="color: #715ab1;">CENTERS</span> = LAYERS * <span style="color: #4e3163;">2</span>
+<span style="color: #715ab1;">DIM</span> = <span style="color: #4e3163;">2</span>
+<span style="color: #715ab1;">N</span> = <span style="color: #4e3163;">10</span>
+<span style="color: #715ab1;">MINIMUM_POINTS</span> = <span style="color: #4e3163;">100</span>
+
+<span style="color: #715ab1;">points</span>, <span style="color: #715ab1;">_</span> = make_blobs<span style="color: #3a81c3;">(</span>n_samples=POINTS, centers=CENTERS, n_features=<span style="color: #4e3163;">2</span>, random_state=<span style="color: #4e3163;">0</span><span style="color: #3a81c3;">)</span>
+
+<span style="color: #2aa1ae; background-color: #ecf3ec;">#</span><span style="color: #2aa1ae; background-color: #ecf3ec;">random assign</span>
+<span style="color: #715ab1;">rnk</span> = np.random.randn<span style="color: #3a81c3;">(</span>LAYERS,POINTS<span style="color: #3a81c3;">)</span>&gt; <span style="color: #4e3163;">0</span>
+<span style="color: #3a81c3; font-weight: bold;">def</span> <span style="color: #6c3163; font-weight: bold;">M</span><span style="color: #3a81c3;">(</span>points, r<span style="color: #3a81c3;">)</span>:
+    <span style="color: #3a81c3; font-weight: bold;">return</span> np.mean<span style="color: #3a81c3;">(</span>points<span style="color: #6c3163;">[</span>r,:<span style="color: #6c3163;">]</span>, axis=<span style="color: #4e3163;">0</span><span style="color: #3a81c3;">)</span>, np.mean<span style="color: #3a81c3;">(</span>points<span style="color: #6c3163;">[</span>np.logical_not<span style="color: #2d9574;">(</span>r<span style="color: #2d9574;">)</span>,:<span style="color: #6c3163;">]</span>,axis=<span style="color: #4e3163;">0</span><span style="color: #3a81c3;">)</span>
+
+<span style="color: #3a81c3; font-weight: bold;">def</span> <span style="color: #6c3163; font-weight: bold;">E</span><span style="color: #3a81c3;">(</span>points, mu0, mu1<span style="color: #3a81c3;">)</span>:
+    <span style="color: #3a81c3; font-weight: bold;">return</span> np.linalg.norm<span style="color: #3a81c3;">(</span>points - mu0, axis=<span style="color: #4e3163;">1</span><span style="color: #3a81c3;">)</span> &lt; np.linalg.norm<span style="color: #3a81c3;">(</span>points - mu1, axis=<span style="color: #4e3163;">1</span><span style="color: #3a81c3;">)</span>
+
+<span style="color: #3a81c3; font-weight: bold;">def</span> <span style="color: #6c3163; font-weight: bold;">EM</span><span style="color: #3a81c3;">(</span>idx, layer<span style="color: #3a81c3;">)</span>:
+    <span style="color: #3a81c3; font-weight: bold;">if</span> layer==LAYERS <span style="color: #3a81c3; font-weight: bold;">or</span> idx.size==<span style="color: #4e3163;">0</span> <span style="color: #3a81c3; font-weight: bold;">or</span> idx.size&lt;MINIMUM_POINTS:
+        <span style="color: #3a81c3; font-weight: bold;">return</span>
+    <span style="color: #715ab1;">p</span> = points<span style="color: #3a81c3;">[</span>idx,:<span style="color: #3a81c3;">]</span>
+    <span style="color: #715ab1;">r</span> = rnk<span style="color: #3a81c3;">[</span>layer, idx<span style="color: #3a81c3;">]</span>
+    <span style="color: #3a81c3; font-weight: bold;">if</span> np.<span style="color: #3a81c3;">all</span><span style="color: #3a81c3;">(</span>r<span style="color: #3a81c3;">)</span> <span style="color: #3a81c3; font-weight: bold;">or</span> np.<span style="color: #3a81c3;">all</span><span style="color: #3a81c3;">(</span>np.logical_not<span style="color: #6c3163;">(</span>r<span style="color: #6c3163;">)</span><span style="color: #3a81c3;">)</span>:
+        <span style="color: #3a81c3; font-weight: bold;">return</span>
+    <span style="color: #715ab1;">mu0_</span>, <span style="color: #715ab1;">mu1_</span> = M<span style="color: #3a81c3;">(</span>p, r<span style="color: #3a81c3;">)</span>
+    <span style="color: #715ab1;">r_</span> = E<span style="color: #3a81c3;">(</span>p, mu0_, mu1_<span style="color: #3a81c3;">)</span>
+
+    <span style="color: #3a81c3; font-weight: bold;">if</span> np.<span style="color: #3a81c3;">all</span><span style="color: #3a81c3;">(</span>r_<span style="color: #3a81c3;">)</span> <span style="color: #3a81c3; font-weight: bold;">or</span> np.<span style="color: #3a81c3;">all</span><span style="color: #3a81c3;">(</span>np.logical_not<span style="color: #6c3163;">(</span>r_<span style="color: #6c3163;">)</span><span style="color: #3a81c3;">)</span>:
+        <span style="color: #3a81c3; font-weight: bold;">return</span>
+
+    <span style="color: #715ab1;">rnk</span><span style="color: #3a81c3;">[</span>layer, idx<span style="color: #3a81c3;">]</span> = r_
+    EM<span style="color: #3a81c3;">(</span>idx<span style="color: #6c3163;">[</span>r_<span style="color: #6c3163;">]</span>, layer+<span style="color: #4e3163;">1</span><span style="color: #3a81c3;">)</span>
+    EM<span style="color: #3a81c3;">(</span>idx<span style="color: #6c3163;">[</span>np.logical_not<span style="color: #2d9574;">(</span>r_<span style="color: #2d9574;">)</span><span style="color: #6c3163;">]</span>, layer+<span style="color: #4e3163;">1</span><span style="color: #3a81c3;">)</span>
+
+<span style="color: #3a81c3; font-weight: bold;">def</span> <span style="color: #6c3163; font-weight: bold;">plot</span><span style="color: #3a81c3;">(</span>idx, layer<span style="color: #3a81c3;">)</span>:
+    <span style="color: #3a81c3; font-weight: bold;">if</span> layer == LAYERS <span style="color: #3a81c3; font-weight: bold;">or</span> idx.size==<span style="color: #4e3163;">0</span> <span style="color: #3a81c3; font-weight: bold;">or</span> idx.size&lt;MINIMUM_POINTS:
+        <span style="color: #3a81c3; font-weight: bold;">return</span>
+    <span style="color: #715ab1;">p</span> = points<span style="color: #3a81c3;">[</span>idx,:<span style="color: #3a81c3;">]</span>
+    <span style="color: #715ab1;">r</span> = rnk<span style="color: #3a81c3;">[</span>layer, idx<span style="color: #3a81c3;">]</span>
+    <span style="color: #715ab1;">p0</span> = p<span style="color: #3a81c3;">[</span>r,:<span style="color: #3a81c3;">]</span>
+    <span style="color: #715ab1;">p1</span> = p<span style="color: #3a81c3;">[</span>np.logical_not<span style="color: #6c3163;">(</span>r<span style="color: #6c3163;">)</span>,:<span style="color: #3a81c3;">]</span>
+    <span style="color: #3a81c3; font-weight: bold;">if</span> np.<span style="color: #3a81c3;">sum</span><span style="color: #3a81c3;">(</span>np.logical_not<span style="color: #6c3163;">(</span>r<span style="color: #6c3163;">)</span><span style="color: #3a81c3;">)</span>&lt;MINIMUM_POINTS <span style="color: #3a81c3; font-weight: bold;">or</span> np.<span style="color: #3a81c3;">sum</span><span style="color: #3a81c3;">(</span>r<span style="color: #3a81c3;">)</span>&lt;MINIMUM_POINTS:
+        plt.plot<span style="color: #3a81c3;">(</span>p0<span style="color: #6c3163;">[</span>:,<span style="color: #4e3163;">0</span><span style="color: #6c3163;">]</span>, p0<span style="color: #6c3163;">[</span>:,<span style="color: #4e3163;">1</span><span style="color: #6c3163;">]</span>,<span style="color: #2d9574;">'.'</span><span style="color: #3a81c3;">)</span>
+        <span style="color: #715ab1;">p1</span> = p<span style="color: #3a81c3;">[</span>np.logical_not<span style="color: #6c3163;">(</span>r<span style="color: #6c3163;">)</span>,:<span style="color: #3a81c3;">]</span>
+        plt.plot<span style="color: #3a81c3;">(</span>p1<span style="color: #6c3163;">[</span>:,<span style="color: #4e3163;">0</span><span style="color: #6c3163;">]</span>, p1<span style="color: #6c3163;">[</span>:,<span style="color: #4e3163;">1</span><span style="color: #6c3163;">]</span>,<span style="color: #2d9574;">'.'</span><span style="color: #3a81c3;">)</span>
+
+    plot<span style="color: #3a81c3;">(</span>idx<span style="color: #6c3163;">[</span>r<span style="color: #6c3163;">]</span>,layer+<span style="color: #4e3163;">1</span><span style="color: #3a81c3;">)</span>
+    plot<span style="color: #3a81c3;">(</span>idx<span style="color: #6c3163;">[</span>np.logical_not<span style="color: #2d9574;">(</span>r<span style="color: #2d9574;">)</span><span style="color: #6c3163;">]</span>,layer+<span style="color: #4e3163;">1</span><span style="color: #3a81c3;">)</span>
+
+plt.ion<span style="color: #3a81c3;">()</span>
+
+<span style="color: #715ab1;">ALL_INDEX</span> = np.array<span style="color: #3a81c3;">(</span>np.arange<span style="color: #6c3163;">(</span>POINTS<span style="color: #6c3163;">)</span><span style="color: #3a81c3;">)</span>
+<span style="color: #3a81c3; font-weight: bold;">for</span> i <span style="color: #3a81c3; font-weight: bold;">in</span> <span style="color: #3a81c3;">range</span><span style="color: #3a81c3;">(</span>N<span style="color: #3a81c3;">)</span>:
+    EM<span style="color: #3a81c3;">(</span>ALL_INDEX, <span style="color: #4e3163;">0</span><span style="color: #3a81c3;">)</span>
+    plt.cla<span style="color: #3a81c3;">()</span>
+    plot<span style="color: #3a81c3;">(</span>ALL_INDEX, <span style="color: #4e3163;">0</span><span style="color: #3a81c3;">)</span>
+    plt.show<span style="color: #3a81c3;">()</span>
+    plt.pause<span style="color: #3a81c3;">(</span><span style="color: #4e3163;">1</span><span style="color: #3a81c3;">)</span>
+plt.pause<span style="color: #3a81c3;">(</span><span style="color: #4e3163;">10</span><span style="color: #3a81c3;">)</span>
+
+</pre>
+</div>
+
+
+<div class="figure">
+<p><img src="ltximg/multi_kmeans.png" alt="multi_kmeans.png" />
+</p>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="date">Created: 2020-05-25 Mon 16:45</p>
+</div>
+</body>
+</html>
