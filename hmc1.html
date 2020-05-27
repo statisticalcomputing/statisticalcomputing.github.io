@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2020-05-23 Sat 16:35 -->
+<!-- 2020-05-27 Wed 10:31 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>&lrm;</title>
@@ -26,9 +26,9 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#org46d7903">Metropolis</a>
+<li><a href="#orgf4c9969">Metropolis</a>
 <ul>
-<li><a href="#org536160e">Metropolis</a></li>
+<li><a href="#org353d67d">Metropolis</a></li>
 <li><a href="#orge63d099">Metropolis-Hastings</a></li>
 <li><a href="#org364893f">Relation of the two Metropolis algorithm</a></li>
 </ul>
@@ -40,15 +40,12 @@
 <ul>
 <li><a href="#orgc71e651">Accept prob.</a></li>
 <li><a href="#orga0699e9">Energy conservation</a></li>
+<li><a href="#orgad63fef">Camparision</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a href="#orge5563c1">Corrected HMC</a>
-<ul>
-<li><a href="#orgf9f3df9">Another example</a></li>
-</ul>
-</li>
+<li><a href="#orge06d956">Energy Conserved HMC</a></li>
 </ul>
 </div>
 </div>
@@ -98,15 +95,32 @@
 </p>
 
 <p>
+一般而言，势能与位置有关，动能则与动量有关。
+</p>
+
+<p>
+如果针对一个系统（比如一群气体粒子），将总能量守恒原则进行展开，则意味着：
+</p>
+
+<ol class="org-ol">
+<li>如果系统的势能之和为常数，则系统的动能之和也是常数。</li>
+<li>如果系统的势能之和与位置有关，则系统的动能之和也与位置有关。</li>
+</ol>
+
+<p>
+在统计计算中，我们一般研究第二种情况。这意味着不同位置对应的动能之和不同，对应的动量分布也不同。因此在仿真算法中，如果在不同位置，以相同分布（比如标准正态）生成动量初始值，那么就破坏了能量守恒原则。
+</p>
+
+<p>
 受到krauth的statistical mechanics algorithm and computation的启发，我们采用扔皮球的方式进行讨论。
 </p>
-<div id="outline-container-org46d7903" class="outline-2">
-<h2 id="org46d7903">Metropolis</h2>
-<div class="outline-text-2" id="text-org46d7903">
+<div id="outline-container-orgf4c9969" class="outline-2">
+<h2 id="orgf4c9969">Metropolis</h2>
+<div class="outline-text-2" id="text-orgf4c9969">
 </div>
-<div id="outline-container-org536160e" class="outline-3">
-<h3 id="org536160e">Metropolis</h3>
-<div class="outline-text-3" id="text-org536160e">
+<div id="outline-container-org353d67d" class="outline-3">
+<h3 id="org353d67d">Metropolis</h3>
+<div class="outline-text-3" id="text-org353d67d">
 <p>
 此时从位置a扔一个皮球，假设皮球只能落在位置a,b,c，而且皮球将等可能地落在这三个位置上。
 </p>
@@ -210,19 +224,22 @@
 \[K(p)=-\frac{p^T p}{2}\]
 通过哈密顿仿真得到轨迹，在轨迹上使用蒙特卡洛进行抽样，可以获得 &pi;(x) 的参数。
 以下是哈密顿蒙特卡洛算法[information theory, inference and learning,p388]。
-该算法以下有两方面的问题:
+该算法有两个问题：
 </p>
 <ol class="org-ol">
-<li>接受概率公式</li>
-<li>能量守恒</li>
+<li>接受概率</li>
+<li>能量不守恒</li>
 </ol>
-<p>
-，我们逐一进行讨论。 
-</p>
 
 
 <div class="figure">
-<p><img src="ltximg/hmc.png" alt="hmc.png" />
+<p><img src="./ltximg/hmc.png" alt="hmc.png" />
+</p>
+</div>
+
+
+<div class="figure">
+<p><img src="ltximg/mh_ac.png" alt="mh_ac.png" />
 </p>
 </div>
 </div>
@@ -231,24 +248,35 @@
 <h4 id="orgc71e651">Accept prob.</h4>
 <div class="outline-text-4" id="text-orgc71e651">
 <p>
-算法第5行到第7行运行哈密顿仿真。算法第3行为每次仿真前的总能量，第8行为仿真后的总能量。
+算法第3行重新生成动量，第3行之前动量p1，对应于状态s1，第3行之后动量变为p2，对应于状态s2。这两个状态的位置没有变化，都是x1。
+算法第5行到第7行运行哈密顿仿真。算法第4行为每次仿真前的总能量，第8行为仿真后的总能量。    
 </p>
 
 <p>
-由于哈密顿仿真保持总能量不变，因此（从原则上）仿真前后的总能量相同。
+由于哈密顿仿真保持总能量不变，因此（从原则上）仿真前后的总能量相同，但具体的位置和动量都有变化。仿真后对应状态s3。
 </p>
 
 <p>
-根据以上算法，可知，接受概率的公式为:
-\[p(x \to x_*)=\min(1,\frac{e^{-U(x_*)-K(p_*)}}{e^{-K(p)-U(x)}})=\min(1,1)=1\]
-</p>
-
-<p>
-由于接受概率总是1，该算法实际上是在哈密顿轨迹上等概率选取样本点，而没有使用Metropolis算法。
-</p>
-
-<p>
-如果认为哈密顿与蒙特卡洛属于不同的技术，那么哈密顿蒙特卡洛采样器实际上应当称为哈密顿采样器，因为它只使用了哈密顿技术。
+由于状态s2到s3为哈密顿仿真，其相互跳转概率相同。
+\[\mathcal A(s_2\to s_3) = \mathcal A(s_3\to s_2)\]
+状态s1和s2之间位置相同，所以势能相同，二者的区别在于动量及动能不同。
+\[\mathcal A(s_1\to s_2) = p(K(p_1),K(p_2)|K(p_1))\]
+\[\mathcal A(s_2\to s_1) = p(K(p_2),K(p_1)|K(p_2))\]
+因此得到：
+\[\frac{\mathcal A(s_1\to s_2)}{\mathcal A(s_2\to s_1)} = \frac{p(K(p_2))}{p(K(p_1))}\]
+和
+\[\frac{\mathcal A(s_1\to s_3)}{\mathcal A(s_3\to s_1)} = \frac{p(K(p_2))}{p(K(p_1))}\]
+根Metropolis-Hastings，可知，接受概率的公式应当为:
+\[p(s_1 \to s_3)=\min(1,\frac{\pi(s_3)}{A(s_1\to s_3)}\frac{A(s_3\to s_1)}{\pi(s_1)})\]
+由于：
+\[\pi(s_1)=e^{-U(x_1)}\]
+\[\pi(s_3)=e^{-U(x_2)}\]
+将前面几个公式代入到上式，得到：
+\[p(s_1 \to s_3)=\min(1,\frac{e^{-U(x_2)}}{e^{-K(p_2)}}\frac{e^{-K(p_1)}}{e^{-U(x_1)}})=\min(1,e^{K(p_2)+U(x_1)-U(x_2)-K(p_1)})\]
+哈密顿蒙特卡洛所采用的接受概率公式为：
+\[p(s_1 \to s_3)=\min(1,e^{H(s_2)-H(s_3)})=\min(1,e^{U(x_1)+K(p_2)-U(x_2)-K(p_3)})\]
+如果我们比较以上两个公式，就会发现二者之间有区别。
+实际上，由于哈密顿仿真不改变能量，因此状态 \(s_2\) 和 \(s_3\) 总能量相等。因此哈密顿蒙特卡洛的接受概率总是1。该算法实际上是在哈密顿轨迹上等概率选取样本点，而没有使用Metropolis算法。
 </p>
 </div>
 </div>
@@ -269,69 +297,58 @@
 </p>
 </div>
 </div>
+<div id="outline-container-orgad63fef" class="outline-4">
+<h4 id="orgad63fef">Camparision</h4>
+<div class="outline-text-4" id="text-orgad63fef">
+<p>
+验证哈密顿蒙特卡洛的接受概率是否有问题，需要进行定量实验。这里采用一系列二维正态分布的抽样结果，并比较估计协方差的误差。
+\[\Sigma = \begin{bmatrix}1&\rho\\ \rho&1\\\end{bmatrix}\]
+其中 \(\rho\) 从0.1 变化到 0.8。
+</p>
+
+<p>
+由于哈密顿蒙特卡洛对步长参数极为敏感，我们需要测试不同的步长，然后比较两种接受概率产生的结果。两种方法除了接受概率不同，其它的实现都相同。
+步长从0.01变化到0.64，两种接受概率的结果对比:
+<img src="./ltximg/vanilla.png" alt="vanilla.png" />
+</p>
+
+<p>
+虚线为哈密顿蒙特卡洛所的接受概率产生的误差，实线为采用更正后公式的结果。更正后产生的误差要明显小于原来方案。
+</p>
+
+<p>
+<a href="https://github.com/statisticalcomputing/Gaussian-Hamiltonian-Monte-Carlo/blob/master/hmc_vanilla.py">代码</a>
+</p>
+</div>
+</div>
 </div>
 </div>
 
-<div id="outline-container-orge5563c1" class="outline-2">
-<h2 id="orge5563c1">Corrected HMC</h2>
-<div class="outline-text-2" id="text-orge5563c1">
+<div id="outline-container-orge06d956" class="outline-2">
+<h2 id="orge06d956">Energy Conserved HMC</h2>
+<div class="outline-text-2" id="text-orge06d956">
 <p>
-如果将哈密顿蒙特卡洛接受概率公式与广义Metropolis公式相比，该算法有两个假设:
-</p>
-<ol class="org-ol">
-<li>\[\pi(x)=e^{-U(x)}\]</li>
-<li><p>
-\[\frac{\mathcal A(x \to x_*)}{\mathcal A(x_* \to x)} = \frac{e^{-K(p)}}{e^{-K(p_*)}}\]
+如果对HMC算法进行修正，使其在重新生成动量的时候（算法第3行）保持总能量守恒(即p1和p2赋值相同)，则状态s1和状态s2的总能量相同，从而二者相互跳转概率相同。
+从状态s2到s3运行哈密顿仿真，总能量不变，s2和s3之间相互跳转概率也相同。
+因此状态s1和s3之间相互跳转概率相同。
+\[\mathcal A(s_1\to s_3)=\mathcal A(s_3\to s_1)\] 
 </p>
 
-<p>
-第一个假设是目标假设，可以认为是真。问题出在第二个假设。
+<div class="figure">
+<p><img src="ltximg/mh_chmc.png" alt="mh_chmc.png" />
 </p>
-
-<p>
- 为了揭示其问题，考虑一个特殊情况：如果在仿真之间保持总能量守恒，则两个状态的相互跳转概率相同：
- \[\mathcal A(x\to x_*)=\mathcal A(x_*\to x)\] 
-则第二个假设变为以下形式：
-\[1 = \frac{e^{-K(p)}}{e^{-K(p_*)}}\]
-但由于每次仿真的初始动量p和末尾动量p*显然不相同，因此上述假设的错误就非常明显了。
-</p></li>
-</ol>
 </div>
 
-<div id="outline-container-orgf9f3df9" class="outline-3">
-<h3 id="orgf9f3df9">Another example</h3>
-<div class="outline-text-3" id="text-orgf9f3df9">
 <p>
-为了说明其错误，我们还可以举一个更具体的例子。
-假设皮球可以在地面上弹起，并且没有能量损失。
-</p>
-
-<p>
-可以设置两个状态：
-</p>
-<ol class="org-ol">
-<li>地面</li>
-<li>弹跳的最高点处</li>
-</ol>
-
-<p>
-显然这两个状态相互转移:
-</p>
-<ol class="org-ol">
-<li>所需时间相同</li>
-<li>两个状态的总能量相同</li>
-<li>两个状态跳转概率相同，因为是依次跳转</li>
-<li>两个状态动量不同，动能也不同</li>
-</ol>
-
-<p>
-则哈密顿第二个假设的左边仍然为1，右边仍然不等于1，再次显示这个假设有问题。
+根据Metropolis-Hastings公式，从状态s1到s3的接受概率为：
+\[p(s_1 \to s_3)=\min(1,\frac{e^{-U(x_2)}}{e^{-U(x_1)}})\]
 </p>
 
 <p>
 因此在不同仿真之间保持总能量恒定的前提下，正确的接受概率的公式应当为：
 \[p(x \to x_*)=\min(1,\frac{e^{-U(x_*)}}{e^{-U(x)}})\]
 </p>
+
 
 <p>
 为了保持能量守恒，每次重新初始化动量以后，应当重新设置其向量半径。
@@ -353,19 +370,22 @@
 </p>
 
 <p>
-顺便提一下，对于N个粒子总动能恒定的系统，物理学家或者数学家称之为（半径为r的）3N-1球 \(\mathbb{S}_R^{3N-1}\) 。
+对于物理空间中N个粒子总动能恒定的系统，可以称为（半径为r的）3N-1维球面 \(\mathbb{S}_R^{3N-1}\) 。
 </p>
 
 <p>
-综上所述，得到更正后的算法：
+综上所述，得到遵守能量守恒的哈密顿蒙特卡洛算法：
 <img src="ltximg/chmc.png" alt="chmc.png" />
 </p>
-</div>
+
+<p>
+这个算法需要预先设定总能量的大小，或者动态调节总能量。这一点与哈密顿蒙特卡洛不同，二者的实现差别较大。
+</p>
 </div>
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2020-05-23 Sat 16:35</p>
+<p class="date">Created: 2020-05-27 Wed 10:31</p>
 </div>
 </body>
 </html>

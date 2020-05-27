@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2020-05-21 Thu 06:41 -->
+<!-- 2020-05-26 Tue 21:15 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>&lrm;</title>
@@ -140,7 +140,7 @@
 <div class="outline-text-4" id="text-orgf94bf9e">
 <p>
  如果采用如下形式的动能
-\[K(p)=\frac{p^T \Sigma^{-1} p}{2}\]
+\[K(p)=\frac{p^T \Sigma p}{2}\]
 那么仿真算法可以应用于原来的&Sigma;<sub>1</sub>，其仿真效果如下：
 <img src="./ltximg/animation-r.gif" alt="animation-r.gif" />
 </p>
@@ -216,7 +216,7 @@
 </p>
 
 <p>
-这个过程就像一个循环，从样本中估计参数，然后更新动能函数，随后使得采样更加准确，然后估计出更准确的参数&ctdot;。
+这个过程就像一个循环，从样本中估计参数，然后更新势能函数，随后使得采样更加准确，然后估计出更准确的参数&ctdot;。
 </p>
 
 <p>
@@ -327,8 +327,8 @@
 <div class="outline-text-2" id="text-orgc886722">
 <p>
 我们使用一系列从一般到高度奇异的协方差进行测试：
-\[  \Sigma = \begin{bmatrix}1&K\\K&1\\\end{bmatrix}\]
-其中K从0.1 变化到 0.9999999。
+\[  \Sigma = \begin{bmatrix}1&\rho\\ \rho&1\\\end{bmatrix}\]
+其中 \(\rho\) 从0.1 变化到 0.9999999。
 然后计算协方差的估计误差，得到如下结果：
 <img src="./ltximg/hmc43.png" alt="hmc43.png" />
 这张图显示，基于位置变换的方法优于对比方法四个数字位以上。
@@ -337,7 +337,7 @@
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2020-05-21 Thu 06:41</p>
+<p class="date">Created: 2020-05-26 Tue 21:15</p>
 </div>
 </body>
 </html>
