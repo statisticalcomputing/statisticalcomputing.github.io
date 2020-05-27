@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2020-05-27 Wed 14:51 -->
+<!-- 2020-05-27 Wed 15:44 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>&lrm;</title>
@@ -26,9 +26,9 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#org2d606e8">Metropolis</a>
+<li><a href="#orgd17e080">Metropolis</a>
 <ul>
-<li><a href="#orge205c0c">Metropolis</a></li>
+<li><a href="#org2d606e8">Metropolis</a></li>
 <li><a href="#orge63d099">Metropolis-Hastings</a></li>
 <li><a href="#org364893f">Relation of the two Metropolis algorithm</a></li>
 </ul>
@@ -121,13 +121,13 @@
 <p>
 受到krauth的statistical mechanics algorithm and computation的启发，我们采用扔皮球的方式进行讨论。
 </p>
-<div id="outline-container-org2d606e8" class="outline-2">
-<h2 id="org2d606e8">Metropolis</h2>
-<div class="outline-text-2" id="text-org2d606e8">
+<div id="outline-container-orgd17e080" class="outline-2">
+<h2 id="orgd17e080">Metropolis</h2>
+<div class="outline-text-2" id="text-orgd17e080">
 </div>
-<div id="outline-container-orge205c0c" class="outline-3">
-<h3 id="orge205c0c">Metropolis</h3>
-<div class="outline-text-3" id="text-orge205c0c">
+<div id="outline-container-org2d606e8" class="outline-3">
+<h3 id="org2d606e8">Metropolis</h3>
+<div class="outline-text-3" id="text-org2d606e8">
 <p>
 此时从位置a扔一个皮球，假设皮球只能落在位置a,b,c，而且皮球将等可能地落在这三个位置上。
 </p>
@@ -311,7 +311,24 @@
 
 <p>
 虚线为哈密顿蒙特卡洛所的接受概率产生的误差，实线为采用更正后公式的结果。在步长很小或者很大的情况下，两种方案的结果区别不大。
-当步长合适的情况下，更正公式产生的误差要小于原来方案。
+</p>
+
+<p>
+当步长合适的情况下，比如从0.08到1.6，更正公式产生的误差要明显小于原来公式产生的结果。
+</p>
+
+
+<div class="figure">
+<p><img src="./ltximg/vanilla2.png" alt="vanilla2.png" />
+</p>
+</div>
+
+<p>
+对这种采样结果依赖于步长参数的现象可以解释为：在步长不适当的情况下，哈密顿仿真无法产生理想的目标轨迹，因此即使是正确的接受概率公式，也无法抽样出产生理想的样本。
+</p>
+
+<p>
+这也从一个侧面说明步长参数的重要性，我们将在其它博文中介绍步长参数的自动调节方法。
 </p>
 
 <p>
@@ -401,7 +418,7 @@
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2020-05-27 Wed 14:51</p>
+<p class="date">Created: 2020-05-27 Wed 15:44</p>
 </div>
 </body>
 </html>
