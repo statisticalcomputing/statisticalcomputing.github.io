@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2020-05-27 Wed 15:44 -->
+<!-- 2020-05-27 Wed 17:30 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>&lrm;</title>
@@ -26,9 +26,9 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#orgd17e080">Metropolis</a>
+<li><a href="#org06fa5a6">Metropolis</a>
 <ul>
-<li><a href="#org2d606e8">Metropolis</a></li>
+<li><a href="#org6857917">Metropolis</a></li>
 <li><a href="#orge63d099">Metropolis-Hastings</a></li>
 <li><a href="#org364893f">Relation of the two Metropolis algorithm</a></li>
 </ul>
@@ -36,7 +36,7 @@
 <li><a href="#orgd2d1196">HMC</a>
 <ul>
 <li><a href="#org0eade1c">Hamiltonian Dynamics</a></li>
-<li><a href="#orgfa863f5">&ldquo;Monte Carlo?&rdquo;</a>
+<li><a href="#orgd745464">Problems</a>
 <ul>
 <li><a href="#orgc71e651">Accept prob.</a>
 <ul>
@@ -49,11 +49,16 @@
 </ul>
 </li>
 <li><a href="#orge06d956">Energy Conserved HMC</a></li>
+<li><a href="#org4995324">Conclusion</a></li>
 </ul>
 </div>
 </div>
 <p>
-本文讨论哈密顿蒙特卡洛算法的稳定性和正确性问题及其解决方法。
+哈密顿蒙特卡洛是一种有潜力的方法，与深度学习技术结合，它可用于研究高维非线性模型。
+</p>
+
+<p>
+本文讨论哈密顿蒙特卡洛算法的稳定性和正确性问题，及其改进方案。
 </p>
 
 <p>
@@ -121,13 +126,13 @@
 <p>
 受到krauth的statistical mechanics algorithm and computation的启发，我们采用扔皮球的方式进行讨论。
 </p>
-<div id="outline-container-orgd17e080" class="outline-2">
-<h2 id="orgd17e080">Metropolis</h2>
-<div class="outline-text-2" id="text-orgd17e080">
+<div id="outline-container-org06fa5a6" class="outline-2">
+<h2 id="org06fa5a6">Metropolis</h2>
+<div class="outline-text-2" id="text-org06fa5a6">
 </div>
-<div id="outline-container-org2d606e8" class="outline-3">
-<h3 id="org2d606e8">Metropolis</h3>
-<div class="outline-text-3" id="text-org2d606e8">
+<div id="outline-container-org6857917" class="outline-3">
+<h3 id="org6857917">Metropolis</h3>
+<div class="outline-text-3" id="text-org6857917">
 <p>
 此时从位置a扔一个皮球，假设皮球只能落在位置a,b,c，而且皮球将等可能地落在这三个位置上。
 </p>
@@ -214,22 +219,44 @@
 <p>
 哈密顿系统中，总能量等于动能和势能之和：
 \[H=K+U\]
+</p>
+
+<p>
 哈密顿公式指出了变量对时间的导数和能量对变量的偏导数之间具有如下关系
 \[\dot x=\frac{dK}{dp}\]
 \[\dot p=-\frac{dU}{dx}\]
 </p>
-</div>
-</div>
-<div id="outline-container-orgfa863f5" class="outline-3">
-<h3 id="orgfa863f5">&ldquo;Monte Carlo?&rdquo;</h3>
-<div class="outline-text-3" id="text-orgfa863f5">
+
 <p>
 假设未知概率 &pi;(x) 参数的维度很高，则普通的蒙特卡洛方法无法进行抽样。
+</p>
+
+<p>
 这时可以其用势能来表示此概率：
+</p>
+
+<p>
 \[U(x)=-\log \pi(x)\]
+</p>
+
+<p>
 动能一般取二次函数:
+</p>
+
+<p>
 \[K(p)=-\frac{p^T p}{2}\]
+</p>
+
+<p>
 通过哈密顿仿真得到轨迹，在轨迹上使用蒙特卡洛进行抽样，可以获得 &pi;(x) 的参数。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgd745464" class="outline-3">
+<h3 id="orgd745464">Problems</h3>
+<div class="outline-text-3" id="text-orgd745464">
+<p>
 以下是哈密顿蒙特卡洛算法[information theory, inference and learning,p388]。
 </p>
 
@@ -314,7 +341,7 @@
 </p>
 
 <p>
-当步长合适的情况下，比如从0.08到1.6，更正公式产生的误差要明显小于原来公式产生的结果。
+当步长合适的情况下，比如从0.08到0.15，更正公式产生的误差要明显小于原来公式产生的结果。
 </p>
 
 
@@ -328,7 +355,7 @@
 </p>
 
 <p>
-这也从一个侧面说明步长参数的重要性，我们将在其它博文中介绍步长参数的自动调节方法。
+这也从一个侧面说明步长参数的重要性，我们将在其它文章介绍步长参数的自动调节方法。
 </p>
 
 <p>
@@ -412,13 +439,22 @@
 </p>
 
 <p>
-这个算法需要预先设定总能量的大小，或者动态调节总能量。这一点与哈密顿蒙特卡洛不同，二者的实现差别较大。
+这个算法需要预先设定总能量的大小，或者动态调节总能量。这一点与哈密顿蒙特卡洛不同，二者的实现差别较大，因此没有对二者进行客观比较。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org4995324" class="outline-2">
+<h2 id="org4995324">Conclusion</h2>
+<div class="outline-text-2" id="text-org4995324">
+<p>
+哈密顿蒙特卡洛算法存在若干问题，解决这些问题有助于提高抽样的准确度和算法的稳定程度。
 </p>
 </div>
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2020-05-27 Wed 15:44</p>
+<p class="date">Created: 2020-05-27 Wed 17:30</p>
 </div>
 </body>
 </html>
