@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2020-05-27 Wed 11:58 -->
+<!-- 2020-05-27 Wed 14:51 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>&lrm;</title>
@@ -26,9 +26,9 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#orge205c0c">Metropolis</a>
+<li><a href="#org2d606e8">Metropolis</a>
 <ul>
-<li><a href="#org9b835f5">Metropolis</a></li>
+<li><a href="#orge205c0c">Metropolis</a></li>
 <li><a href="#orge63d099">Metropolis-Hastings</a></li>
 <li><a href="#org364893f">Relation of the two Metropolis algorithm</a></li>
 </ul>
@@ -36,7 +36,7 @@
 <li><a href="#orgd2d1196">HMC</a>
 <ul>
 <li><a href="#org0eade1c">Hamiltonian Dynamics</a></li>
-<li><a href="#org9bb30f5">&ldquo;Monte Carlo&rdquo;</a>
+<li><a href="#orgfa863f5">&ldquo;Monte Carlo?&rdquo;</a>
 <ul>
 <li><a href="#orgc71e651">Accept prob.</a>
 <ul>
@@ -121,13 +121,13 @@
 <p>
 受到krauth的statistical mechanics algorithm and computation的启发，我们采用扔皮球的方式进行讨论。
 </p>
-<div id="outline-container-orge205c0c" class="outline-2">
-<h2 id="orge205c0c">Metropolis</h2>
-<div class="outline-text-2" id="text-orge205c0c">
+<div id="outline-container-org2d606e8" class="outline-2">
+<h2 id="org2d606e8">Metropolis</h2>
+<div class="outline-text-2" id="text-org2d606e8">
 </div>
-<div id="outline-container-org9b835f5" class="outline-3">
-<h3 id="org9b835f5">Metropolis</h3>
-<div class="outline-text-3" id="text-org9b835f5">
+<div id="outline-container-orge205c0c" class="outline-3">
+<h3 id="orge205c0c">Metropolis</h3>
+<div class="outline-text-3" id="text-orge205c0c">
 <p>
 此时从位置a扔一个皮球，假设皮球只能落在位置a,b,c，而且皮球将等可能地落在这三个位置上。
 </p>
@@ -220,9 +220,9 @@
 </p>
 </div>
 </div>
-<div id="outline-container-org9bb30f5" class="outline-3">
-<h3 id="org9bb30f5">&ldquo;Monte Carlo&rdquo;</h3>
-<div class="outline-text-3" id="text-org9bb30f5">
+<div id="outline-container-orgfa863f5" class="outline-3">
+<h3 id="orgfa863f5">&ldquo;Monte Carlo?&rdquo;</h3>
+<div class="outline-text-3" id="text-orgfa863f5">
 <p>
 假设未知概率 &pi;(x) 参数的维度很高，则普通的蒙特卡洛方法无法进行抽样。
 这时可以其用势能来表示此概率：
@@ -231,12 +231,19 @@
 \[K(p)=-\frac{p^T p}{2}\]
 通过哈密顿仿真得到轨迹，在轨迹上使用蒙特卡洛进行抽样，可以获得 &pi;(x) 的参数。
 以下是哈密顿蒙特卡洛算法[information theory, inference and learning,p388]。
+</p>
+
+<p>
 该算法有两个问题：
 </p>
 <ol class="org-ol">
 <li>接受概率</li>
 <li>能量不守恒</li>
 </ol>
+
+<p>
+我们逐个进行讨论。
+</p>
 
 
 <div class="figure">
@@ -303,7 +310,7 @@
 </p>
 
 <p>
-虚线为哈密顿蒙特卡洛所的接受概率产生的误差，实线为采用更正后公式的结果。除了在步长很小或者很大的情况下，两种方案的结果区别不大。
+虚线为哈密顿蒙特卡洛所的接受概率产生的误差，实线为采用更正后公式的结果。在步长很小或者很大的情况下，两种方案的结果区别不大。
 当步长合适的情况下，更正公式产生的误差要小于原来方案。
 </p>
 
@@ -337,7 +344,7 @@
 <h2 id="orge06d956">Energy Conserved HMC</h2>
 <div class="outline-text-2" id="text-orge06d956">
 <p>
-如果对HMC算法进行修正，使其在重新生成动量的时候（算法第3行）保持总能量守恒(即p1和p2赋值相同)，则状态s1和状态s2的总能量相同，从而二者相互跳转概率相同。
+如果对HMC算法进行修正，使其在重新生成动量的时候（算法第3行）保持总能量守恒(即p1和p2幅值相同)，则状态s1和状态s2的总能量相同，从而二者相互跳转概率相同。
 从状态s2到s3运行哈密顿仿真，总能量不变，s2和s3之间相互跳转概率也相同。
 因此状态s1和s3之间相互跳转概率相同。
 \[\mathcal A(s_1\to s_3)=\mathcal A(s_3\to s_1)\] 
@@ -355,7 +362,7 @@
 
 <p>
 因此在不同仿真之间保持总能量恒定的前提下，正确的接受概率的公式应当为：
-\[p(x \to x_*)=\min(1,\frac{e^{-U(x_*)}}{e^{-U(x)}})\]
+\[p(x_1 \to x_2)=\min(1,\frac{e^{-U(x_2)}}{e^{-U(x_1)}})\]
 </p>
 
 
@@ -394,7 +401,7 @@
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2020-05-27 Wed 11:58</p>
+<p class="date">Created: 2020-05-27 Wed 14:51</p>
 </div>
 </body>
 </html>
