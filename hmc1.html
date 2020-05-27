@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2020-05-27 Wed 11:46 -->
+<!-- 2020-05-27 Wed 11:58 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>&lrm;</title>
@@ -26,9 +26,9 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#org9b835f5">Metropolis</a>
+<li><a href="#orge205c0c">Metropolis</a>
 <ul>
-<li><a href="#org469108a">Metropolis</a></li>
+<li><a href="#org9b835f5">Metropolis</a></li>
 <li><a href="#orge63d099">Metropolis-Hastings</a></li>
 <li><a href="#org364893f">Relation of the two Metropolis algorithm</a></li>
 </ul>
@@ -121,13 +121,13 @@
 <p>
 受到krauth的statistical mechanics algorithm and computation的启发，我们采用扔皮球的方式进行讨论。
 </p>
-<div id="outline-container-org9b835f5" class="outline-2">
-<h2 id="org9b835f5">Metropolis</h2>
-<div class="outline-text-2" id="text-org9b835f5">
+<div id="outline-container-orge205c0c" class="outline-2">
+<h2 id="orge205c0c">Metropolis</h2>
+<div class="outline-text-2" id="text-orge205c0c">
 </div>
-<div id="outline-container-org469108a" class="outline-3">
-<h3 id="org469108a">Metropolis</h3>
-<div class="outline-text-3" id="text-org469108a">
+<div id="outline-container-org9b835f5" class="outline-3">
+<h3 id="org9b835f5">Metropolis</h3>
+<div class="outline-text-3" id="text-org9b835f5">
 <p>
 此时从位置a扔一个皮球，假设皮球只能落在位置a,b,c，而且皮球将等可能地落在这三个位置上。
 </p>
@@ -267,8 +267,8 @@
 由于状态s2到s3为哈密顿仿真，其相互跳转概率相同。
 \[\mathcal A(s_2\to s_3) = \mathcal A(s_3\to s_2)\]
 状态s1和s2之间位置相同，所以势能相同，二者的区别在于动量及动能不同。
-\[\mathcal A(s_1\to s_2) = p(K(p_1),K(p_2)|K(p_1))\]
-\[\mathcal A(s_2\to s_1) = p(K(p_2),K(p_1)|K(p_2))\]
+\[\mathcal A(s_1\to s_2) = p(K(p_2)|K(p_1))\]
+\[\mathcal A(s_2\to s_1) = p(K(p_1)|K(p_2))\]
 因此得到：
 \[\frac{\mathcal A(s_1\to s_2)}{\mathcal A(s_2\to s_1)} = \frac{p(K(p_2))}{p(K(p_1))}\]
 和
@@ -394,7 +394,7 @@
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2020-05-27 Wed 11:46</p>
+<p class="date">Created: 2020-05-27 Wed 11:58</p>
 </div>
 </body>
 </html>
