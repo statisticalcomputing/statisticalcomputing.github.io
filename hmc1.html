@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2020-05-27 Wed 10:44 -->
+<!-- 2020-05-27 Wed 11:46 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>&lrm;</title>
@@ -26,9 +26,9 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#orgdaad3bb">Metropolis</a>
+<li><a href="#org9b835f5">Metropolis</a>
 <ul>
-<li><a href="#orgf4c9969">Metropolis</a></li>
+<li><a href="#org469108a">Metropolis</a></li>
 <li><a href="#orge63d099">Metropolis-Hastings</a></li>
 <li><a href="#org364893f">Relation of the two Metropolis algorithm</a></li>
 </ul>
@@ -38,9 +38,12 @@
 <li><a href="#org0eade1c">Hamiltonian Dynamics</a></li>
 <li><a href="#org9bb30f5">&ldquo;Monte Carlo&rdquo;</a>
 <ul>
-<li><a href="#orgc71e651">Accept prob.</a></li>
-<li><a href="#orga0699e9">Energy conservation</a></li>
+<li><a href="#orgc71e651">Accept prob.</a>
+<ul>
 <li><a href="#orgad63fef">Camparision</a></li>
+</ul>
+</li>
+<li><a href="#orga0699e9">Energy conservation</a></li>
 </ul>
 </li>
 </ul>
@@ -54,8 +57,12 @@
 </p>
 
 <p>
-这里的主要思想是：一个哈密顿仿真的总能量守恒，则仿真是稳定的。
+这里的主要思想是：
 </p>
+<ol class="org-ol">
+<li>一个稳定的哈密顿仿真的总能量应当守恒</li>
+<li>正确的抽样应该满足详细平衡方程，或者Metropolis-Hastings</li>
+</ol>
 
 <p>
 比如如下这个仿真，红色的是位置-势能轨迹，黑色是位置轨迹，而蓝色是势能（对应概率）的三倍标准差界限。
@@ -114,13 +121,13 @@
 <p>
 受到krauth的statistical mechanics algorithm and computation的启发，我们采用扔皮球的方式进行讨论。
 </p>
-<div id="outline-container-orgdaad3bb" class="outline-2">
-<h2 id="orgdaad3bb">Metropolis</h2>
-<div class="outline-text-2" id="text-orgdaad3bb">
+<div id="outline-container-org9b835f5" class="outline-2">
+<h2 id="org9b835f5">Metropolis</h2>
+<div class="outline-text-2" id="text-org9b835f5">
 </div>
-<div id="outline-container-orgf4c9969" class="outline-3">
-<h3 id="orgf4c9969">Metropolis</h3>
-<div class="outline-text-3" id="text-orgf4c9969">
+<div id="outline-container-org469108a" class="outline-3">
+<h3 id="org469108a">Metropolis</h3>
+<div class="outline-text-3" id="text-org469108a">
 <p>
 此时从位置a扔一个皮球，假设皮球只能落在位置a,b,c，而且皮球将等可能地落在这三个位置上。
 </p>
@@ -279,6 +286,32 @@
 实际上，由于哈密顿仿真不改变能量，因此状态 \(s_2\) 和 \(s_3\) 总能量相等。因此哈密顿蒙特卡洛的接受概率总是1。该算法实际上是在哈密顿轨迹上等概率选取样本点，而没有使用Metropolis算法。
 </p>
 </div>
+
+<div id="outline-container-orgad63fef" class="outline-5">
+<h5 id="orgad63fef">Camparision</h5>
+<div class="outline-text-5" id="text-orgad63fef">
+<p>
+验证哈密顿蒙特卡洛的接受概率是否有问题，需要进行定量实验。这里采用一系列二维正态分布的抽样结果，并比较估计协方差的误差。
+\[\Sigma = \begin{bmatrix}1&\rho\\ \rho&1\\\end{bmatrix}\]
+其中 \(\rho\) 从0.1 变化到 0.9。
+</p>
+
+<p>
+由于哈密顿蒙特卡洛对步长参数极为敏感，我们需要测试不同的步长，然后比较两种接受概率产生的结果。两种方法除了接受概率不同，其它的实现都相同。
+步长从0.01变化到0.32，两种接受概率的结果对比:
+<img src="./ltximg/vanilla.png" alt="vanilla.png" />
+</p>
+
+<p>
+虚线为哈密顿蒙特卡洛所的接受概率产生的误差，实线为采用更正后公式的结果。除了在步长很小或者很大的情况下，两种方案的结果区别不大。
+当步长合适的情况下，更正公式产生的误差要小于原来方案。
+</p>
+
+<p>
+<a href="https://github.com/statisticalcomputing/Gaussian-Hamiltonian-Monte-Carlo/blob/master/hmc_vanilla.py">代码</a>
+</p>
+</div>
+</div>
 </div>
 
 <div id="outline-container-orga0699e9" class="outline-4">
@@ -294,30 +327,6 @@
 
 <p>
 不断在不同仿真之间改变总能量可能导致总能量发散或者消失现象，这也是该算法不稳定的根本原因。
-</p>
-</div>
-</div>
-<div id="outline-container-orgad63fef" class="outline-4">
-<h4 id="orgad63fef">Camparision</h4>
-<div class="outline-text-4" id="text-orgad63fef">
-<p>
-验证哈密顿蒙特卡洛的接受概率是否有问题，需要进行定量实验。这里采用一系列二维正态分布的抽样结果，并比较估计协方差的误差。
-\[\Sigma = \begin{bmatrix}1&\rho\\ \rho&1\\\end{bmatrix}\]
-其中 \(\rho\) 从0.1 变化到 0.8。
-</p>
-
-<p>
-由于哈密顿蒙特卡洛对步长参数极为敏感，我们需要测试不同的步长，然后比较两种接受概率产生的结果。两种方法除了接受概率不同，其它的实现都相同。
-步长从0.01变化到0.64，两种接受概率的结果对比:
-<img src="./ltximg/vanilla.png" alt="vanilla.png" />
-</p>
-
-<p>
-虚线为哈密顿蒙特卡洛所的接受概率产生的误差，实线为采用更正后公式的结果。更正后产生的误差要明显小于原来方案。
-</p>
-
-<p>
-<a href="https://github.com/statisticalcomputing/Gaussian-Hamiltonian-Monte-Carlo/blob/master/hmc_vanilla.py">代码</a>
 </p>
 </div>
 </div>
@@ -385,7 +394,7 @@
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2020-05-27 Wed 10:44</p>
+<p class="date">Created: 2020-05-27 Wed 11:46</p>
 </div>
 </body>
 </html>
