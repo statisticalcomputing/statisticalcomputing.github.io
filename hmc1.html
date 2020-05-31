@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2020-05-31 Sun 13:16 -->
+<!-- 2020-05-31 Sun 16:12 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>&lrm;</title>
@@ -26,9 +26,9 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#org49c2396">Metropolis</a>
+<li><a href="#orgcf5566f">Metropolis</a>
 <ul>
-<li><a href="#orge6aa65e">Metropolis</a></li>
+<li><a href="#orgdb7f8f3">Metropolis</a></li>
 <li><a href="#orge63d099">Metropolis-Hastings</a></li>
 <li><a href="#org364893f">Relation of the two Metropolis algorithm</a></li>
 </ul>
@@ -123,16 +123,20 @@
 在统计计算中，我们一般研究第二种情况。这意味着不同位置对应的动能之和不同，对应的动量分布也不同。因此在仿真算法中，如果在不同位置，以相同分布（比如标准正态）生成动量初始值，那么就破坏了能量守恒原则。
 </p>
 
+<div id="outline-container-orgcf5566f" class="outline-2">
+<h2 id="orgcf5566f">Metropolis</h2>
+<div class="outline-text-2" id="text-orgcf5566f">
+<p>
+这里先介绍Metropolis算法，然后再分析HMC算法在正确性和稳定性方面存在的问题及其解决方法。
+</p>
+
 <p>
 受到krauth的statistical mechanics algorithm and computation的启发，我们采用扔皮球的方式进行讨论。
 </p>
-<div id="outline-container-org49c2396" class="outline-2">
-<h2 id="org49c2396">Metropolis</h2>
-<div class="outline-text-2" id="text-org49c2396">
 </div>
-<div id="outline-container-orge6aa65e" class="outline-3">
-<h3 id="orge6aa65e">Metropolis</h3>
-<div class="outline-text-3" id="text-orge6aa65e">
+<div id="outline-container-orgdb7f8f3" class="outline-3">
+<h3 id="orgdb7f8f3">Metropolis</h3>
+<div class="outline-text-3" id="text-orgdb7f8f3">
 <p>
 此时从位置a扔一个皮球，假设皮球只能落在位置a,b,c，而且皮球将等可能地落在这三个位置上。
 </p>
@@ -351,6 +355,28 @@
 </div>
 
 <p>
+我们也可以用以下协方差矩阵进行测试，其中 \(\rho\) 从0.1变到0.9:
+</p>
+
+<p>
+\[\Sigma = \begin{bmatrix}\frac{1}{\rho}&\rho\\ \rho&\frac{1}{\rho}\\\end{bmatrix}\]
+</p>
+
+<p>
+如果步长参数从0.2变动到0.3，我们会得到以下的结果:
+</p>
+
+
+<div class="figure">
+<p><img src="./ltximg/vanilla3.png" alt="vanilla3.png" />
+</p>
+</div>
+
+<p>
+观察到同样的现象：在大多数情况下，更正公式产生的误差要明显小于原来公式产生的结果。
+</p>
+
+<p>
 对这种采样结果依赖于步长参数的现象可以解释为：在步长不适当的情况下，哈密顿仿真无法产生理想的目标轨迹，因此即使是正确的接受概率公式，也无法抽样出产生理想的样本。
 </p>
 
@@ -369,11 +395,11 @@
 <h4 id="orga0699e9">Energy conservation</h4>
 <div class="outline-text-4" id="text-orga0699e9">
 <p>
-哈密顿蒙特卡洛算法有一个特点，即非常容易发散或者停止运行。
+以上实验显示，即使采用修正的接受概率公式，当步长较大的时候，算法仍然可能发散。因此除了正确性的问题，还需要解决算法稳定性问题。
 </p>
 
 <p>
-发散和停止现象是由于该算法破坏了能量守恒法则。算法的第三行会重新生成一个随机的动量，这时会改变动能，因此总能量也随之改变了。
+哈密顿蒙特卡洛算法有一个特点，即非常容易发散或者停止运行。发散和停止现象是由于该算法破坏了能量守恒法则。算法的第三行会重新生成一个随机的动量，这时会改变动能，因此总能量也随之改变了。
 </p>
 
 <p>
@@ -454,7 +480,7 @@
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2020-05-31 Sun 13:16</p>
+<p class="date">Created: 2020-05-31 Sun 16:12</p>
 </div>
 </body>
 </html>
