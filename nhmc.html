@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2020-06-02 Tue 11:20 -->
+<!-- 2020-06-06 Sat 00:52 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>&lrm;</title>
@@ -68,11 +68,11 @@
 </p>
 
 <p>
-3N个动量标量是对称的，在位置确定的情况下，这些动量值均匀分布分布位于一个3n维空间的3N-1维的球面\(\mathbb{S}_R^{3N-1}\) 。
+3N个动量标量是对称的，在位置确定的情况下，这些动量值均匀分布分布位于一个3n维空间的3N-1维的球面\(\mathbb{S}_R^{3N-1}\) ，也就是说，碰撞前后的动量都分布在球面 \(\mathbb{S}_R^{3N-1}\) 上。
 </p>
 
 <p>
-如果“碰撞”后的动量从 \(\mathbb{S}^{3N-1}\) 上均匀选取的话，就能保证从任何一个动量（状态1）到任意其它动量(状态２)的跳转概率相同。
+如果“碰撞”后的动量从 \(\mathbb{S}_R^{3N-1}\) 上均匀选取的话，就能保证从任何一个动量（状态1）到任意其它动量(状态２)的跳转概率相同。
 </p>
 
 <p>
@@ -156,7 +156,7 @@
 
     <span style="color: #715ab1;">info</span> = ghmc<span style="color: #3a81c3;">(</span>U, dU, D=D, dt=dt,EPISODE=EPISODE, POINTS=POINTS,VERBOSE=<span style="color: #4e3163;">False</span><span style="color: #3a81c3;">)</span>
     <span style="color: #715ab1;">x</span> = info<span style="color: #3a81c3;">[</span><span style="color: #2d9574;">'x'</span><span style="color: #3a81c3;">]</span>
-    <span style="color: #715ab1;">d</span> = np.<span style="color: #3a81c3;">sum</span><span style="color: #3a81c3;">(</span>np.square<span style="color: #6c3163;">(</span>np.cov<span style="color: #2d9574;">(</span>np.transpose<span style="color: #67b11d;">(</span>x<span style="color: #b1951d;">[</span><span style="color: #3a81c3;">int</span><span style="color: #3a81c3;">(</span>POINTS*EPISODE/<span style="color: #4e3163;">2</span><span style="color: #3a81c3;">)</span>:,:<span style="color: #b1951d;">]</span><span style="color: #67b11d;">)</span><span style="color: #2d9574;">)</span> - SIGMA<span style="color: #6c3163;">)</span><span style="color: #3a81c3;">)</span>
+    <span style="color: #715ab1;">d</span> = np.sqrt<span style="color: #3a81c3;">(</span>np.mean<span style="color: #6c3163;">(</span>np.square<span style="color: #2d9574;">(</span>np.cov<span style="color: #67b11d;">(</span>np.transpose<span style="color: #b1951d;">(</span>x<span style="color: #3a81c3;">[</span><span style="color: #3a81c3;">int</span><span style="color: #6c3163;">(</span>POINTS*EPISODE/<span style="color: #4e3163;">2</span><span style="color: #6c3163;">)</span>:,:<span style="color: #3a81c3;">]</span><span style="color: #b1951d;">)</span><span style="color: #67b11d;">)</span> - SIGMA<span style="color: #2d9574;">)</span><span style="color: #6c3163;">)</span><span style="color: #3a81c3;">)</span>
 </pre>
 </div>
 
@@ -189,7 +189,7 @@
 </p>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2020-06-02 Tue 11:20</p>
+<p class="date">Created: 2020-06-06 Sat 00:52</p>
 </div>
 </body>
 </html>
