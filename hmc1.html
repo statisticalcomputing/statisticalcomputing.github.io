@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2020-06-11 Thu 09:17 -->
+<!-- 2020-06-11 Thu 10:05 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>&lrm;</title>
@@ -26,9 +26,9 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#org06ea0c1">Metropolis</a>
+<li><a href="#orgafe3dec">Metropolis</a>
 <ul>
-<li><a href="#orgafe3dec">Metropolis</a></li>
+<li><a href="#org23ea8e0">Metropolis</a></li>
 <li><a href="#orge63d099">Metropolis-Hastings</a></li>
 <li><a href="#org364893f">Relation of the two Metropolis algorithm</a></li>
 </ul>
@@ -123,9 +123,9 @@
 在统计计算中，我们一般研究第二种情况。这意味着不同位置对应的动能之和不同，对应的动量分布也不同。因此在仿真算法中，如果在不同位置，以相同分布（比如标准正态）生成动量初始值，那么就破坏了能量守恒原则。
 </p>
 
-<div id="outline-container-org06ea0c1" class="outline-2">
-<h2 id="org06ea0c1">Metropolis</h2>
-<div class="outline-text-2" id="text-org06ea0c1">
+<div id="outline-container-orgafe3dec" class="outline-2">
+<h2 id="orgafe3dec">Metropolis</h2>
+<div class="outline-text-2" id="text-orgafe3dec">
 <p>
 这里先介绍Metropolis算法，然后再分析HMC算法在正确性和稳定性方面存在的问题及其解决方法。
 </p>
@@ -134,9 +134,9 @@
 受到krauth的statistical mechanics algorithm and computation的启发，我们采用扔皮球的方式进行讨论。
 </p>
 </div>
-<div id="outline-container-orgafe3dec" class="outline-3">
-<h3 id="orgafe3dec">Metropolis</h3>
-<div class="outline-text-3" id="text-orgafe3dec">
+<div id="outline-container-org23ea8e0" class="outline-3">
+<h3 id="org23ea8e0">Metropolis</h3>
+<div class="outline-text-3" id="text-org23ea8e0">
 <p>
 此时从位置a扔一个皮球，假设皮球只能落在位置a,b,c，而且皮球将等可能地落在这三个位置上。
 </p>
@@ -315,11 +315,7 @@
 </p>
 
 <p>
-注： <code>感谢Sergei Prokhorenko提示，哈密顿仿真会有误差</code>: \(\mathcal A(s_2 \to s_3) \ne \mathcal A(s_3 \to s_2)\)    
-</p>
-
-<p>
-<code>实际上，当不考虑哈密顿仿真的数值误差时，会得到相似的实验结果。</code>
+<code>实际上，当不考虑哈密顿仿真的数值误差时，即$\mathcal A(s_2 \to s_3) = \mathcal A(s_3 \to s_2)$,会得到相似的实验结果。</code>
 </p>
 
 <p>
@@ -501,7 +497,7 @@
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2020-06-11 Thu 09:17</p>
+<p class="date">Created: 2020-06-11 Thu 10:05</p>
 </div>
 </body>
 </html>
