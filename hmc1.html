@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2020-06-06 Sat 07:39 -->
+<!-- 2020-06-11 Thu 09:17 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>&lrm;</title>
@@ -26,9 +26,9 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#org21ca24a">Metropolis</a>
+<li><a href="#org06ea0c1">Metropolis</a>
 <ul>
-<li><a href="#org1cbf1f3">Metropolis</a></li>
+<li><a href="#orgafe3dec">Metropolis</a></li>
 <li><a href="#orge63d099">Metropolis-Hastings</a></li>
 <li><a href="#org364893f">Relation of the two Metropolis algorithm</a></li>
 </ul>
@@ -123,9 +123,9 @@
 在统计计算中，我们一般研究第二种情况。这意味着不同位置对应的动能之和不同，对应的动量分布也不同。因此在仿真算法中，如果在不同位置，以相同分布（比如标准正态）生成动量初始值，那么就破坏了能量守恒原则。
 </p>
 
-<div id="outline-container-org21ca24a" class="outline-2">
-<h2 id="org21ca24a">Metropolis</h2>
-<div class="outline-text-2" id="text-org21ca24a">
+<div id="outline-container-org06ea0c1" class="outline-2">
+<h2 id="org06ea0c1">Metropolis</h2>
+<div class="outline-text-2" id="text-org06ea0c1">
 <p>
 这里先介绍Metropolis算法，然后再分析HMC算法在正确性和稳定性方面存在的问题及其解决方法。
 </p>
@@ -134,9 +134,9 @@
 受到krauth的statistical mechanics algorithm and computation的启发，我们采用扔皮球的方式进行讨论。
 </p>
 </div>
-<div id="outline-container-org1cbf1f3" class="outline-3">
-<h3 id="org1cbf1f3">Metropolis</h3>
-<div class="outline-text-3" id="text-org1cbf1f3">
+<div id="outline-container-orgafe3dec" class="outline-3">
+<h3 id="orgafe3dec">Metropolis</h3>
+<div class="outline-text-3" id="text-orgafe3dec">
 <p>
 此时从位置a扔一个皮球，假设皮球只能落在位置a,b,c，而且皮球将等可能地落在这三个位置上。
 </p>
@@ -302,28 +302,49 @@
 </p>
 
 <p>
-由于状态s2到s3为哈密顿仿真，其相互跳转概率相同。
-\[\mathcal A(s_2\to s_3) = \mathcal A(s_3\to s_2)\]
+根据Mark Newman的“computational physics”第480页eq10.58可知：
+</p>
+
+<p>
+\[\frac{\mathcal A(s_i\to s_j)}{\mathcal A(s_j \to s_i)} =\frac{P(H(s_j))}{P(H(s_i))}\]
+</p>
+
+<p>
+由于状态s2到s3为哈密顿仿真，由于数值误差，其相互跳转概率不完全相等，其比值为：
+\[\frac{\mathcal A(s_2\to s_3)}{\mathcal A(s_3\to s_2)}=\frac{P(H(s_3))}{P(H(s_2))}=e^{H(s_2)-H(s_3)}=e^{U(x_1)+K(p_2)-U(x_2)-K(p_3)}\]
+</p>
+
+<p>
+注： <code>感谢Sergei Prokhorenko提示，哈密顿仿真会有误差</code>: \(\mathcal A(s_2 \to s_3) \ne \mathcal A(s_3 \to s_2)\)    
+</p>
+
+<p>
+<code>实际上，当不考虑哈密顿仿真的数值误差时，会得到相似的实验结果。</code>
+</p>
+
+<p>
 状态s1和s2之间位置相同，所以势能相同，二者的区别在于动量及动能不同。
 \[\mathcal A(s_1\to s_2) = p(K(p_2)|K(p_1))\]
 \[\mathcal A(s_2\to s_1) = p(K(p_1)|K(p_2))\]
 因此得到：
-\[\frac{\mathcal A(s_1\to s_2)}{\mathcal A(s_2\to s_1)} = \frac{p(K(p_2))}{p(K(p_1))}\]
+\[\frac{\mathcal A(s_1\to s_2)}{\mathcal A(s_2\to s_1)} = \frac{p(K(p_2))}{p(K(p_1))}=e^{K(p_1)-K(p_2)}\]
 和
-\[\frac{\mathcal A(s_1\to s_3)}{\mathcal A(s_3\to s_1)} = \frac{p(K(p_2))}{p(K(p_1))}\]
+\[\frac{\mathcal A(s_1\to s_3)}{\mathcal A(s_3\to s_1)} = e^{K(p_1)+U(x_1)-U(x_2)-K(p_3)}\]
 根Metropolis-Hastings，可知，接受概率的公式应当为:
 \[p(s_1 \to s_3)=\min(1,\frac{\pi(s_3)}{A(s_1\to s_3)}\frac{A(s_3\to s_1)}{\pi(s_1)})\]
 由于：
 \[\pi(s_1)=e^{-U(x_1)}\]
 \[\pi(s_3)=e^{-U(x_2)}\]
 将前面几个公式代入到上式，得到：
-\[p(s_1 \to s_3)=\min(1,\frac{e^{-U(x_2)}}{e^{-K(p_2)}}\frac{e^{-K(p_1)}}{e^{-U(x_1)}})=\min(1,e^{K(p_2)+U(x_1)-U(x_2)-K(p_1)})\]
+\[p(s_1 \to s_3)=\min(1,e^{-U(x_2) + U(x_1) + U(x_2)+K(p_3)-K(p_1)-U(x_1)})=e^{K(p_3)-K(p_1)}\]
 哈密顿蒙特卡洛所采用的接受概率公式为：
 \[p(s_1 \to s_3)=\min(1,e^{H(s_2)-H(s_3)})=\min(1,e^{U(x_1)+K(p_2)-U(x_2)-K(p_3)})\]
 如果我们比较以上两个公式，就会发现二者之间有区别。
-实际上，由于哈密顿仿真不改变能量，因此状态 \(s_2\) 和 \(s_3\) 总能量相等。因此哈密顿蒙特卡洛的接受概率总是1。该算法实际上是在哈密顿轨迹上等概率选取样本点，而没有使用Metropolis算法。
+实际上，由于哈密顿仿真不改变能量，因此状态 \(s_2\) 和 \(s_3\) 总能量相等。因此哈密顿蒙特卡洛的接受概率总是（接近于）1。该算法实际上是在哈密顿轨迹上等概率选取样本点，而没有使用Metropolis算法。
 </p>
 </div>
+
+
 
 <div id="outline-container-orgad63fef" class="outline-5">
 <h5 id="orgad63fef">Camparision</h5>
@@ -415,7 +436,7 @@
 <div class="outline-text-2" id="text-orge06d956">
 <p>
 如果对HMC算法进行修正，使其在重新生成动量的时候（算法第3行）保持总能量守恒(即p1和p2幅值相同)，则状态s1和状态s2的总能量相同，从而二者相互跳转概率相同。
-从状态s2到s3运行哈密顿仿真，总能量不变，s2和s3之间相互跳转概率也相同。
+从状态s2到s3运行哈密顿仿真，总能量不变，在不考虑数值误差的情况下，s2和s3之间相互跳转概率也相同。
 因此状态s1和s3之间相互跳转概率相同。
 \[\mathcal A(s_1\to s_3)=\mathcal A(s_3\to s_1)\] 
 </p>
@@ -480,7 +501,7 @@
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2020-06-06 Sat 07:39</p>
+<p class="date">Created: 2020-06-11 Thu 09:17</p>
 </div>
 </body>
 </html>
