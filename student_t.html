@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2020-06-16 Tue 08:49 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>&lrm;</title>
+<meta name="generator" content="Org mode" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" type="text/css" href="css/org.css"/>
+<script type="text/javascript" src="js/ga.min.js"></script>
+</head>
+<body>
+<div id="org-div-home-and-up">
+ <a accesskey="h" href="sitemap.html"> UP </a>
+ |
+ <a accesskey="H" href="index.html"> HOME </a>
+</div><div id="content">
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org5d4976d">Stage</a></li>
+<li><a href="#orgef6281a">Code</a></li>
+<li><a href="#orgcd86761">Result</a></li>
+</ul>
+</div>
+</div>
+<p>
+今天我们来抽样student&rsquo;s t分布（The BUGS Book,p23）。
+</p>
+<div id="outline-container-org5d4976d" class="outline-2">
+<h2 id="org5d4976d">Stage</h2>
+<div class="outline-text-2" id="text-org5d4976d">
+<ol class="org-ol">
+<li>取概率的负对数作为势能</li>
+<li><p>
+求势能的导数。
+</p>
+
+<p>
+求导数有两种方法：
+</p>
+<ol class="org-ol">
+<li>解析法
+使用符号计算软件（如maple）计算出势能的导数，然后再转换成编程语言</li>
+<li>自动反向求导
+使用autograd</li>
+</ol></li>
+<li><p>
+抽样
+</p>
+
+<p>
+由于这里只有一维，因此不进行位置变换
+</p></li>
+</ol>
+</div>
+</div>
+
+<div id="outline-container-orgef6281a" class="outline-2">
+<h2 id="orgef6281a">Code</h2>
+<div class="outline-text-2" id="text-orgef6281a">
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #3a81c3; font-weight: bold;">from</span> hmc_multi <span style="color: #3a81c3; font-weight: bold;">import</span> hmc
+<span style="color: #3a81c3; font-weight: bold;">import</span> matplotlib.pyplot <span style="color: #3a81c3; font-weight: bold;">as</span> plt
+<span style="color: #2aa1ae; background-color: #ecf3ec;">#</span><span style="color: #2aa1ae; background-color: #ecf3ec;">import autograd.numpy as np</span>
+<span style="color: #3a81c3; font-weight: bold;">import</span> numpy <span style="color: #3a81c3; font-weight: bold;">as</span> np
+<span style="color: #2aa1ae; background-color: #ecf3ec;">#</span><span style="color: #2aa1ae; background-color: #ecf3ec;">from autograd import elementwise_grad as grad</span>
+
+<span style="color: #3a81c3; font-weight: bold;">if</span> <span style="color: #3a81c3;">__name__</span> == <span style="color: #2d9574;">'__main__'</span>:
+    <span style="color: #715ab1;">dt</span> = .<span style="color: #4e3163;">00001</span>
+    <span style="color: #715ab1;">POINTS</span> = <span style="color: #4e3163;">1000</span>
+    <span style="color: #715ab1;">EPISODE</span> = <span style="color: #4e3163;">10000</span>
+    <span style="color: #715ab1;">D</span> = <span style="color: #4e3163;">1</span>
+    <span style="color: #715ab1;">n</span> = POINTS
+    <span style="color: #715ab1;">mu</span> = <span style="color: #4e3163;">10</span>
+    <span style="color: #715ab1;">k</span> = <span style="color: #4e3163;">4</span>
+    <span style="color: #715ab1;">tau</span> = <span style="color: #4e3163;">2</span>
+    <span style="color: #715ab1;">U</span> = <span style="color: #3a81c3; font-weight: bold;">lambda</span> x: <span style="color: #3a81c3;">(</span>k+<span style="color: #4e3163;">1</span><span style="color: #3a81c3;">)</span>/<span style="color: #4e3163;">2</span> * np.log<span style="color: #3a81c3;">(</span><span style="color: #4e3163;">1</span>+tau/k*np.square<span style="color: #6c3163;">(</span>x-mu<span style="color: #6c3163;">)</span><span style="color: #3a81c3;">)</span>.ravel<span style="color: #3a81c3;">()</span>
+    <span style="color: #715ab1;">dU</span> = <span style="color: #3a81c3; font-weight: bold;">lambda</span> x:<span style="color: #3a81c3;">(</span>k + <span style="color: #4e3163;">1</span><span style="color: #3a81c3;">)</span> * tau / k * <span style="color: #3a81c3;">(</span>x - mu<span style="color: #3a81c3;">)</span> / <span style="color: #3a81c3;">(</span><span style="color: #4e3163;">1</span> + tau / k * np.square<span style="color: #6c3163;">(</span>x - mu<span style="color: #6c3163;">)</span><span style="color: #3a81c3;">)</span>
+    <span style="color: #2aa1ae; background-color: #ecf3ec;"># </span><span style="color: #2aa1ae; background-color: #ecf3ec;">dU = grad(U)</span>
+    <span style="color: #3a81c3; font-weight: bold;">print</span><span style="color: #3a81c3;">(</span><span style="color: #2d9574;">'std, mean, mc error'</span><span style="color: #3a81c3;">)</span>
+    <span style="color: #715ab1;">info</span> = hmc<span style="color: #3a81c3;">(</span>U, dU, D=D, dt=dt,EPISODE=EPISODE, POINTS=POINTS,VERBOSE=<span style="color: #4e3163;">False</span>,AC=<span style="color: #4e3163;">0</span>.<span style="color: #4e3163;">3</span><span style="color: #3a81c3;">)</span>
+    <span style="color: #715ab1;">x</span> = info<span style="color: #3a81c3;">[</span><span style="color: #2d9574;">'x'</span><span style="color: #3a81c3;">][</span><span style="color: #3a81c3;">int</span><span style="color: #6c3163;">(</span>POINTS*EPISODE/<span style="color: #4e3163;">2</span><span style="color: #6c3163;">)</span>:<span style="color: #3a81c3;">]</span>
+    <span style="color: #3a81c3; font-weight: bold;">print</span><span style="color: #3a81c3;">(</span>np.std<span style="color: #6c3163;">(</span>x<span style="color: #6c3163;">)</span>,np.mean<span style="color: #6c3163;">(</span>x<span style="color: #6c3163;">)</span>,np.std<span style="color: #6c3163;">(</span>x<span style="color: #6c3163;">)</span>/np.sqrt<span style="color: #6c3163;">(</span><span style="color: #3a81c3;">int</span><span style="color: #2d9574;">(</span>POINTS*EPISODE/<span style="color: #4e3163;">2</span><span style="color: #2d9574;">)</span><span style="color: #6c3163;">)</span><span style="color: #3a81c3;">)</span>
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgcd86761" class="outline-2">
+<h2 id="orgcd86761">Result</h2>
+<div class="outline-text-2" id="text-orgcd86761">
+<table border="0" cellspacing="0" cellpadding="6" rules="none" frame="none">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-right" />
+
+<col  class="org-right" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">&#xa0;</th>
+<th scope="col" class="org-right">std</th>
+<th scope="col" class="org-right">mean</th>
+<th scope="col" class="org-left">mc error</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">true</td>
+<td class="org-right">1</td>
+<td class="org-right">10</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">est.</td>
+<td class="org-right">0.994053038558548</td>
+<td class="org-right">9.999340624452836</td>
+<td class="org-left">0.00044455403349142654</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="date">Created: 2020-06-16 Tue 08:49</p>
+</div>
+</body>
+</html>
