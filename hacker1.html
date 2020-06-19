@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2020-06-19 Fri 17:05 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>&lrm;</title>
+<meta name="generator" content="Org mode" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" type="text/css" href="css/org.css"/>
+<script type="text/javascript" src="js/ga.min.js"></script>
+</head>
+<body>
+<div id="org-div-home-and-up">
+ <a accesskey="h" href="sitemap.html"> UP </a>
+ |
+ <a accesskey="H" href="index.html"> HOME </a>
+</div><div id="content">
+<p>
+HMC可以对连续变量进行抽样，特点是能够应用于高维模型。MCMC可以对离散变量进行抽样。对于同时包含连续和离散变量的模型，可以交替使用HMC和MCMC进行抽样。
+</p>
+
+<p>
+以下显示bayesian methods for hackers第一章第27页的例子，这个模型包含两个连续变量和一个离散变量。
+</p>
+
+<p>
+这个抽样结果与书中使用pymc抽样结果类似，但稍有区别。
+</p>
+
+
+
+<div class="figure">
+<p><img src="ltximg/hacker1.png" alt="hacker1.png" />
+</p>
+</div>
+
+<p>
+为了实现交替抽样，我们需要定义两个能量函数，一个用于抽样连续变量，另一个用于抽样离散变量。
+连续参数的能量的梯度可以使用autograd自动求出。离散参数的能量不需要梯度。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #3a81c3; font-weight: bold;">def</span> <span style="color: #6c3163; font-weight: bold;">U</span><span style="color: #3a81c3;">(</span>x<span style="color: #3a81c3;">)</span>:
+    <span style="color: #3a81c3; font-weight: bold;">global</span> tau0
+    <span style="color: #715ab1;">lam1</span>, <span style="color: #715ab1;">lam2</span> = x<span style="color: #3a81c3;">[</span><span style="color: #4e3163;">0</span>,:<span style="color: #3a81c3;">]</span>, x<span style="color: #3a81c3;">[</span><span style="color: #4e3163;">1</span>,:<span style="color: #3a81c3;">]</span>
+    <span style="color: #715ab1;">lam</span> = lambda_<span style="color: #3a81c3;">(</span>tau0, lam1, lam2<span style="color: #3a81c3;">)</span>
+    <span style="color: #3a81c3; font-weight: bold;">return</span> np.<span style="color: #3a81c3;">sum</span><span style="color: #3a81c3;">(</span>poisson_U<span style="color: #6c3163;">(</span>lam<span style="color: #6c3163;">)</span>,axis=<span style="color: #4e3163;">1</span><span style="color: #3a81c3;">)</span> + exp_U<span style="color: #3a81c3;">(</span>lam1<span style="color: #3a81c3;">)</span> + exp_U<span style="color: #3a81c3;">(</span>lam2<span style="color: #3a81c3;">)</span>
+
+<span style="color: #715ab1;">dU</span> = grad<span style="color: #3a81c3;">(</span>U<span style="color: #3a81c3;">)</span>
+
+<span style="color: #3a81c3; font-weight: bold;">def</span> <span style="color: #6c3163; font-weight: bold;">V</span><span style="color: #3a81c3;">(</span>tau<span style="color: #3a81c3;">)</span>:
+    <span style="color: #3a81c3; font-weight: bold;">global</span> lam0
+    <span style="color: #715ab1;">lam1</span>, <span style="color: #715ab1;">lam2</span> = lam0<span style="color: #3a81c3;">[</span><span style="color: #4e3163;">0</span>,:<span style="color: #3a81c3;">]</span>, lam0<span style="color: #3a81c3;">[</span><span style="color: #4e3163;">1</span>,:<span style="color: #3a81c3;">]</span>
+    <span style="color: #715ab1;">lam</span> = lambda_<span style="color: #3a81c3;">(</span>tau, lam1, lam2<span style="color: #3a81c3;">)</span>
+    <span style="color: #3a81c3; font-weight: bold;">return</span> np.<span style="color: #3a81c3;">sum</span><span style="color: #3a81c3;">(</span>poisson_U<span style="color: #6c3163;">(</span>lam<span style="color: #6c3163;">)</span>,axis=<span style="color: #4e3163;">1</span><span style="color: #3a81c3;">)</span> + exp_U<span style="color: #3a81c3;">(</span>lam1<span style="color: #3a81c3;">)</span> + exp_U<span style="color: #3a81c3;">(</span>lam2<span style="color: #3a81c3;">)</span>
+</pre>
+</div>
+
+<p>
+然后在循环中交替更新连续变量和离散变量。
+</p>
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #715ab1;">gen_V</span> = mcmc<span style="color: #3a81c3;">(</span>V, x_min=<span style="color: #4e3163;">0</span>, x_max=n_count_data, POINTS=POINTS<span style="color: #3a81c3;">)</span>
+<span style="color: #715ab1;">gen_U</span> = hmc<span style="color: #3a81c3;">(</span>U, dU, x0=lam0, D=D, BURNIN=BURNIN, POINTS=POINTS,bndchk=bndchk<span style="color: #3a81c3;">)</span>
+<span style="color: #715ab1;">TAU</span> = <span style="color: #3a81c3;">[]</span>
+<span style="color: #715ab1;">LAM0</span> = <span style="color: #3a81c3;">[]</span>
+<span style="color: #715ab1;">LAM1</span> = <span style="color: #3a81c3;">[]</span>
+<span style="color: #3a81c3; font-weight: bold;">for</span> i <span style="color: #3a81c3; font-weight: bold;">in</span> <span style="color: #3a81c3;">range</span><span style="color: #3a81c3;">(</span>BURNIN*<span style="color: #4e3163;">2</span><span style="color: #3a81c3;">)</span>:
+    <span style="color: #715ab1;">tau0</span> = <span style="color: #3a81c3;">next</span><span style="color: #3a81c3;">(</span>gen_V<span style="color: #3a81c3;">)</span>
+    <span style="color: #715ab1;">lam0</span> = <span style="color: #3a81c3;">next</span><span style="color: #3a81c3;">(</span>gen_U<span style="color: #3a81c3;">)</span>
+    <span style="color: #3a81c3; font-weight: bold;">print</span><span style="color: #3a81c3;">(</span>i<span style="color: #3a81c3;">)</span>
+    <span style="color: #3a81c3; font-weight: bold;">if</span> i &gt; BURNIN:
+        TAU.append<span style="color: #3a81c3;">(</span>tau0<span style="color: #3a81c3;">)</span>
+        LAM0.append<span style="color: #3a81c3;">(</span>lam0<span style="color: #6c3163;">[</span><span style="color: #4e3163;">0</span>,:<span style="color: #6c3163;">]</span><span style="color: #3a81c3;">)</span>
+        LAM1.append<span style="color: #3a81c3;">(</span>lam0<span style="color: #6c3163;">[</span><span style="color: #4e3163;">1</span>,:<span style="color: #6c3163;">]</span><span style="color: #3a81c3;">)</span>
+</pre>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="date">Created: 2020-06-19 Fri 17:05</p>
+</div>
+</body>
+</html>
