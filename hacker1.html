@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2020-06-19 Fri 17:05 -->
+<!-- 2020-06-19 Fri 22:20 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>&lrm;</title>
@@ -27,13 +27,13 @@ HMC可以对连续变量进行抽样，特点是能够应用于高维模型。MC
 </p>
 
 <p>
-这个抽样结果与书中使用pymc抽样结果类似，但稍有区别。
+这个抽样结果与书中使用pymc抽样结果非常类似。
 </p>
 
 
 
 <div class="figure">
-<p><img src="ltximg/hacker1.png" alt="hacker1.png" />
+<p><img src="ltximg/hacker2.png" alt="hacker2.png" />
 </p>
 </div>
 
@@ -78,9 +78,13 @@ HMC可以对连续变量进行抽样，特点是能够应用于高维模型。MC
         LAM1.append<span style="color: #3a81c3;">(</span>lam0<span style="color: #6c3163;">[</span><span style="color: #4e3163;">1</span>,:<span style="color: #6c3163;">]</span><span style="color: #3a81c3;">)</span>
 </pre>
 </div>
+
+<p>
+有一个实现细节，为了保证抽样准确性，hmc和mcmc都需要实现等概率跳转，然后利用Metropolis进行判断。
+</p>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2020-06-19 Fri 17:05</p>
+<p class="date">Created: 2020-06-19 Fri 22:20</p>
 </div>
 </body>
 </html>
