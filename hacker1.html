@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2020-06-19 Fri 22:36 -->
+<!-- 2020-06-19 Fri 23:25 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>&lrm;</title>
@@ -38,7 +38,7 @@ HMC可以对连续变量进行抽样，特点是能够应用于高维模型。MC
 </div>
 
 <p>
-为了实现交替抽样，我们需要定义两个能量函数，一个用于抽样连续变量，另一个用于抽样离散变量。
+为了实现混合抽样，我们需要定义两个能量函数，一个用于抽样连续变量，另一个用于抽样离散变量。
 连续参数的能量的梯度可以使用autograd自动求出。离散参数的能量不需要梯度。
 </p>
 
@@ -82,9 +82,13 @@ HMC可以对连续变量进行抽样，特点是能够应用于高维模型。MC
 <p>
 有一个实现细节，为了保证抽样准确性，hmc和mcmc都需要实现等概率跳转，然后利用Metropolis进行判断。
 </p>
+
+<p>
+<a href="https://github.com/statisticalcomputing/Gaussian-Hamiltonian-Monte-Carlo/blob/master/bayesian_hacker_1.py">代码</a>
+</p>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2020-06-19 Fri 22:36</p>
+<p class="date">Created: 2020-06-19 Fri 23:25</p>
 </div>
 </body>
 </html>
