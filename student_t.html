@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2020-06-16 Tue 08:49 -->
+<!-- 2020-06-21 Sun 09:52 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>&lrm;</title>
@@ -23,8 +23,9 @@
 <div id="text-table-of-contents">
 <ul>
 <li><a href="#org5d4976d">Stage</a></li>
-<li><a href="#orgef6281a">Code</a></li>
+<li><a href="#org618dd2d">Code</a></li>
 <li><a href="#orgcd86761">Result</a></li>
+<li><a href="#org49b569a">Code</a></li>
 </ul>
 </div>
 </div>
@@ -44,11 +45,23 @@
 求导数有两种方法：
 </p>
 <ol class="org-ol">
-<li>解析法
-使用符号计算软件（如maple）计算出势能的导数，然后再转换成编程语言</li>
-<li>自动反向求导
-使用autograd</li>
+<li><p>
+解析法
+</p>
+
+<p>
+使用符号计算软件（如maple）计算出势能的导数，然后再转换成编程语言
+</p></li>
+
+<li><p>
+自动反向求导
+</p>
+
+<p>
+使用autograd
+</p></li>
 </ol></li>
+
 <li><p>
 抽样
 </p>
@@ -60,9 +73,9 @@
 </div>
 </div>
 
-<div id="outline-container-orgef6281a" class="outline-2">
-<h2 id="orgef6281a">Code</h2>
-<div class="outline-text-2" id="text-orgef6281a">
+<div id="outline-container-org618dd2d" class="outline-2">
+<h2 id="org618dd2d">Code</h2>
+<div class="outline-text-2" id="text-org618dd2d">
 <div class="org-src-container">
 <pre class="src src-python"><span style="color: #3a81c3; font-weight: bold;">from</span> hmc_multi <span style="color: #3a81c3; font-weight: bold;">import</span> hmc
 <span style="color: #3a81c3; font-weight: bold;">import</span> matplotlib.pyplot <span style="color: #3a81c3; font-weight: bold;">as</span> plt
@@ -131,9 +144,18 @@
 </table>
 </div>
 </div>
+
+<div id="outline-container-org49b569a" class="outline-2">
+<h2 id="org49b569a">Code</h2>
+<div class="outline-text-2" id="text-org49b569a">
+<p>
+<a href="https://github.com/statisticalcomputing/Gaussian-Hamiltonian-Monte-Carlo/blob/master/hmc_multi.py">代码</a>
+</p>
+</div>
+</div>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2020-06-16 Tue 08:49</p>
+<p class="date">Created: 2020-06-21 Sun 09:52</p>
 </div>
 </body>
 </html>
