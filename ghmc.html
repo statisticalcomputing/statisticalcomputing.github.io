@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2020-06-20 Sat 16:56 -->
+<!-- 2020-06-22 Mon 21:53 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>&lrm;</title>
@@ -329,7 +329,7 @@
 <div class="outline-text-2" id="text-orgc886722">
 <p>
 我们使用一系列从一般到高度奇异的协方差进行测试：
-\[  \Sigma = \begin{bmatrix}1&\rho\\ \rho&1\\\end{bmatrix}\]
+\[  \Sigma = \begin{bmatrix}\frac{1}{\rho}&\rho\\ \rho&\frac{1}{\rho}\\\end{bmatrix}\]
 其中 \(\rho\) 从0.0001 变化到 0.9999999。
 实现使用了<a href="nhmc.html">基于位置变换的“大规模并行”哈密顿蒙特卡洛</a>一文中介绍的技术。
 然后计算协方差的估计误差，得到如下结果：
@@ -347,7 +347,7 @@
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2020-06-20 Sat 16:56</p>
+<p class="date">Created: 2020-06-22 Mon 21:53</p>
 </div>
 </body>
 </html>
