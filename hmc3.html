@@ -1,0 +1,634 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2020-07-15 Wed 09:38 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>&lrm;</title>
+<meta name="generator" content="Org mode" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" type="text/css" href="css/org.css"/>
+<script type="text/javascript" src="js/ga.min.js"></script>
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</head>
+<body>
+<div id="org-div-home-and-up">
+ <a accesskey="h" href="sitemap.html"> UP </a>
+ |
+ <a accesskey="H" href="index.html"> HOME </a>
+</div><div id="content">
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org08c13f7">例子</a></li>
+<li><a href="#org928dee7">问题</a>
+<ul>
+<li><a href="#orgc373396">接受概率</a></li>
+<li><a href="#org14e8d4a">能量守恒</a>
+<ul>
+<li><a href="#orgaf203f2">能量守恒HMC</a></li>
+</ul>
+</li>
+<li><a href="#orgcc428f2">轨迹震荡</a>
+<ul>
+<li><a href="#org3c05db5">算法实现</a></li>
+<li><a href="#orgbc7137c">参数估计</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#org520c23b">实验</a></li>
+</ul>
+</div>
+</div>
+<p>
+本文介绍了哈密顿蒙特卡洛的概念、方法和修正方案。
+</p>
+<div id="outline-container-org08c13f7" class="outline-2">
+<h2 id="org08c13f7">例子</h2>
+<div class="outline-text-2" id="text-org08c13f7">
+<p>
+哈密顿蒙特卡洛算法在物理领域和统计领域有广泛的应用。根据已知数据估计模型的参数，其过程可以用一个简单的例子来说明。
+假如一个人接收短信的数量 \(k\) 服从poisson分布:
+</p>
+
+<p>
+\[P(k|q)=\frac{q^k e^{-q}}{k!}\]
+</p>
+
+<p>
+其中参数 \(q\) 为概率的参数。实际上一般是知道短信数量 \(k\) ，希望估计参数 \(q\) 的值。
+</p>
+
+<p>
+由于\(q\) 为 \(k\) 的期望，其值大于零，不妨假设参数 \(q\) 的先验服从指数分布：
+</p>
+
+<p>
+\[P(q)=\lambda \cdot e^{-\lambda x}\]
+</p>
+
+<p>
+其中 \(\lambda\) 为先验概率的参数，这里是一个预设常数。
+根据贝叶斯公式，参数 \(q\) 的后验概率：
+</p>
+
+<p>
+\[P(q|k) = \frac{P(k|q)\cdot P(q)}{P(k)}\]
+</p>
+
+<p>
+由于metropolis算法只需要计算概率之间的比值:
+</p>
+
+<p>
+\[\frac{P(q_1|k)}{P(q_2|k)}\]
+</p>
+
+<p>
+因此不需要计算后验概率的分母项，只需要计算似然函数和先验概率的乘积，这个函数是进行抽样的基础：
+</p>
+
+<p>
+\[f(q) = P(k|q)\cdot P(q)=\frac{q^k e^{-q}}{k!} \cdot \lambda \cdot e^{-\lambda x}\]
+</p>
+
+
+<p>
+如果已知短信数量 \(k\) ，希望估计参数 \(q\) 的值，那么显然 \(q\) 不一定等于 \(k\), 而是分布于一个区间。
+这时可以使用蒙特卡洛来抽样出一系列的参数值来表示其所服从的概率。其实这种方法也可以抽样出其它连续变量的概率，如以下为（未归一化的）多维正态概率：
+\[f(q)=e^{-\frac{(q-\mu)\cdot \Sigma^{-1}\cdot (q-\mu)}{2}}\]
+</p>
+
+<p>
+这种方法的唯一要求是势能函数对变量具有导数。
+</p>
+
+<p>
+根据玻尔兹曼，能量和概率有如下关系：
+</p>
+
+<p>
+\[U(q)=-\log f(q)\]
+</p>
+
+<p>
+其中 \(U\) 为势能，\(q\) 为位置变量。
+由于势能是位置的连续函数，因此可以求出其导数。如果 \(U\) 是 \(q\) 的高维非线性函数，则可以使用反向求导技术求出导数。
+</p>
+
+<p>
+哈密顿系统中，总能量等于动能和势能之和：
+</p>
+
+<p>
+\[H=K+U\]
+</p>
+
+<p>
+哈密顿公式指出了变量对时间的导数和能量对变量的偏导数之间具有如下关系
+\[\dot q=\frac{dK}{dp}\]
+\[\dot p=-\frac{dU}{dq}\]
+</p>
+
+<p>
+动能一般取二次函数:
+</p>
+
+<p>
+\[K(p)=\frac{p^T p}{2}\]
+</p>
+
+<p>
+通过哈密顿仿真得到轨迹，在轨迹上使用Metropolis算法进行抽样，可以获得 \(P(q|k)\) 的参数。
+</p>
+
+<p>
+这里先回顾Metropolis算法。  
+与krauth的statistical mechanics algorithm and computation一样，我们采用扔皮球的方式进行讨论。
+</p>
+
+<p>
+此时从位置a扔一个皮球，假设皮球只能落在位置a,b,c，而且皮球将等可能地落在这三个位置上。
+</p>
+
+<p>
+系统处于a,b等位置的静态概率，其实就对应于上边的 \(f(q)\) ：
+\[\pi(a),\pi(b),\dots\]
+</p>
+
+<p>
+假设从位置a移动到位置a,b和c以后，根据一个概率决定是否接受这个移动。
+如果位置之间的跳转概率不等，那么总的转移概率\[\mathcal P(a \to b)\]分为两部分，即从皮球从位置a出发，落在b的概率，以及接受这个跳转的概率。
+\[\mathcal P(a\to b)=\mathcal A(a \to b)\cdot p(a \to b)\]
+</p>
+
+
+<div class="figure">
+<p><img src="ltximg/mh-with-prior.png" alt="mh-with-prior.png" />
+</p>
+</div>
+
+<p>
+于是得到Metropolis-Hasting算法:
+\[p(a\to b)=\min[1,\frac{\pi(b)}{\mathcal A(a\to b)}\frac{\mathcal A(b \to a)}{\pi(a)}]\]
+其中\[\mathcal A(a\to b)\]是从位置a移动到位置b的概率,而\[p(a\to b)\]是接受这个移动的接受概率。
+</p>
+
+<p>
+在哈密顿动力学中，如果两个状态能够相互转换，并且总能量相同，则二者的相互跳转概率亦相同:
+\[\mathcal A(a\to b)=\mathcal A(b \to a)\]
+这时得到Metropolis算法:
+\[p(a\to b)=\min[1,\frac{\pi(b)}{\pi(a)}]\]
+</p>
+
+<p>
+抽样多维正态分布，如果将HMC算法写成代码，大概为如下形式:
+</p>
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #715ab1;">SIGMA</span> = np.array<span style="color: #3a81c3;">(</span><span style="color: #6c3163;">[</span><span style="color: #2d9574;">[</span><span style="color: #4e3163;">1</span>,.<span style="color: #4e3163;">95</span><span style="color: #2d9574;">]</span>,<span style="color: #2d9574;">[</span>.<span style="color: #4e3163;">95</span>,<span style="color: #4e3163;">1</span><span style="color: #2d9574;">]</span><span style="color: #6c3163;">]</span><span style="color: #3a81c3;">)</span>
+<span style="color: #2aa1ae; background-color: #ecf3ec;"># </span><span style="color: #2aa1ae; background-color: #ecf3ec;">&#33021;&#37327;&#20989;&#25968;</span>
+<span style="color: #715ab1;">U</span> = <span style="color: #3a81c3; font-weight: bold;">lambda</span> q: np.dot<span style="color: #3a81c3;">(</span>q,np.linalg.solve<span style="color: #6c3163;">(</span>SIGMA,q<span style="color: #6c3163;">)</span>,q<span style="color: #3a81c3;">)</span>/<span style="color: #4e3163;">2</span>
+<span style="color: #715ab1;">dU</span> = <span style="color: #3a81c3; font-weight: bold;">lambda</span> q: np.linalg.solve<span style="color: #3a81c3;">(</span>SIGMA,q<span style="color: #3a81c3;">)</span>
+<span style="color: #715ab1;">K</span> = <span style="color: #3a81c3; font-weight: bold;">lambda</span> p: np.dot<span style="color: #3a81c3;">(</span>p,p<span style="color: #3a81c3;">)</span>/<span style="color: #4e3163;">2</span>
+<span style="color: #715ab1;">dK</span> = <span style="color: #3a81c3; font-weight: bold;">lambda</span> p: p
+<span style="color: #2aa1ae; background-color: #ecf3ec;"># </span><span style="color: #2aa1ae; background-color: #ecf3ec;">&#21021;&#22987;&#20301;&#32622;&#21644;&#21160;&#37327;</span>
+<span style="color: #715ab1;">qStar</span> = np.random.randn<span style="color: #3a81c3;">(</span><span style="color: #4e3163;">2</span><span style="color: #3a81c3;">)</span>
+<span style="color: #715ab1;">pStar</span> = np.random.randn<span style="color: #3a81c3;">(</span><span style="color: #4e3163;">2</span><span style="color: #3a81c3;">)</span>
+
+<span style="color: #3a81c3; font-weight: bold;">for</span> i <span style="color: #3a81c3; font-weight: bold;">in</span> <span style="color: #3a81c3;">range</span><span style="color: #3a81c3;">(</span>SIMULATIONS<span style="color: #3a81c3;">)</span>:
+    <span style="color: #2aa1ae; background-color: #ecf3ec;"># </span><span style="color: #2aa1ae; background-color: #ecf3ec;">s1: q1, p1</span>
+    <span style="color: #715ab1;">q1</span> = qStar
+    <span style="color: #2aa1ae; background-color: #ecf3ec;"># </span><span style="color: #2aa1ae; background-color: #ecf3ec;">&#37325;&#26032;&#29983;&#25104;&#21160;&#37327;</span>
+    <span style="color: #715ab1;">pStar</span> = np.random.randn<span style="color: #3a81c3;">(</span><span style="color: #4e3163;">2</span><span style="color: #3a81c3;">)</span>
+    <span style="color: #2aa1ae; background-color: #ecf3ec;"># </span><span style="color: #2aa1ae; background-color: #ecf3ec;">s2: q1, p2</span>
+    <span style="color: #715ab1;">H0</span> = K<span style="color: #3a81c3;">(</span>pStar<span style="color: #3a81c3;">)</span> + U<span style="color: #3a81c3;">(</span>qStar<span style="color: #3a81c3;">)</span>
+    <span style="color: #2aa1ae; background-color: #ecf3ec;"># </span><span style="color: #2aa1ae; background-color: #ecf3ec;">&#21704;&#23494;&#39039;&#20223;&#30495;</span>
+    <span style="color: #3a81c3; font-weight: bold;">for</span> i <span style="color: #3a81c3; font-weight: bold;">in</span> <span style="color: #3a81c3;">range</span><span style="color: #3a81c3;">(</span>STEPS<span style="color: #3a81c3;">)</span>:
+        <span style="color: #715ab1;">qStar</span> = qStar + delta*dK<span style="color: #3a81c3;">(</span>pStar<span style="color: #3a81c3;">)</span>
+        <span style="color: #715ab1;">pStar</span> = pStar - delta*dU<span style="color: #3a81c3;">(</span>qStar<span style="color: #3a81c3;">)</span>
+    <span style="color: #2aa1ae; background-color: #ecf3ec;"># </span><span style="color: #2aa1ae; background-color: #ecf3ec;">s3: q3, p3</span>
+    <span style="color: #715ab1;">H</span> = K<span style="color: #3a81c3;">(</span>pStar<span style="color: #3a81c3;">)</span> + U<span style="color: #3a81c3;">(</span>qStar<span style="color: #3a81c3;">)</span>
+    <span style="color: #2aa1ae; background-color: #ecf3ec;"># </span><span style="color: #2aa1ae; background-color: #ecf3ec;">HMC's "metropolis" &#31639;&#27861;</span>
+    <span style="color: #715ab1;">alpha</span> = <span style="color: #3a81c3;">min</span><span style="color: #3a81c3;">(</span><span style="color: #4e3163;">1</span>,np.exp<span style="color: #6c3163;">(</span>H0 - H<span style="color: #6c3163;">)</span><span style="color: #3a81c3;">)</span>
+    <span style="color: #3a81c3; font-weight: bold;">if</span> alpha &lt; rand<span style="color: #3a81c3;">()</span>:
+        <span style="color: #715ab1;">qStar</span> = q1
+    <span style="color: #2aa1ae; background-color: #ecf3ec;"># </span><span style="color: #2aa1ae; background-color: #ecf3ec;">&#25277;&#26679;&#20986;&#26679;&#26412;</span>
+    <span style="color: #3a81c3; font-weight: bold;">yield</span> qStar
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org928dee7" class="outline-2">
+<h2 id="org928dee7">问题</h2>
+<div class="outline-text-2" id="text-org928dee7">
+<p>
+其实哈密顿蒙特卡洛可能有以下几个问题，导致其准确率和稳定度都不甚理想:接受概率、不稳定、轨迹震荡。对应的解决方法大致为：保持总能量守恒，使用Metropolis公式，进行位置和动量变换。
+</p>
+</div>
+<div id="outline-container-orgc373396" class="outline-3">
+<h3 id="orgc373396">接受概率</h3>
+<div class="outline-text-3" id="text-orgc373396">
+<p>
+算法在内循环重新生成动量，在这之前之前动量p1（上次仿真的 \(p_*\) ），对应于状态s1，这之后之后动量变为p2，对应于状态s2。这两个状态的位置没有变化，都是q1。
+算法随后运行哈密顿仿真。算法仿真前总能量 \(H_0\) ，仿真后的总能量为H。    
+</p>
+
+<p>
+由于哈密顿仿真保持总能量不变，因此（从原则上）仿真前后的总能量相同，但具体的位置和动量都有变化。仿真后对应状态s3。
+</p>
+
+<p>
+由于状态s2到s3为哈密顿仿真，其相互跳转概率相等：
+\[\mathcal A(s_2\to s_3) = \mathcal A(s_3\to s_2)\]
+</p>
+
+<p>
+实际上，当考虑哈密顿仿真的数值误差时，即 \(\mathcal A(s_2 \to s_3) \ne \mathcal A(s_3 \to s_2)\) ,会得到相似的实验结果。
+</p>
+
+<p>
+状态s1和s2之间位置相同，所以势能相同，二者的区别在于动量及动能不同。
+\[\mathcal A(s_1\to s_2) = P(K(p_2)|K(p_1))\]
+\[\mathcal A(s_2\to s_1) = P(K(p_1)|K(p_2))\]
+因此得到：
+\[\frac{\mathcal A(s_1\to s_3)}{\mathcal A(s_3\to s_1)}=\frac{\mathcal A(s_1\to s_2)}{\mathcal A(s_2\to s_1)} = \frac{P(K(p_2))}{P(K(p_1))}=e^{K(p_1)-K(p_2)}\]
+</p>
+
+<p>
+根Metropolis-Hastings，可知，接受概率的公式应当为:
+\[p(s_1 \to s_3)=\min(1,\frac{\pi(s_3)}{A(s_1\to s_3)}\frac{A(s_3\to s_1)}{\pi(s_1)})\]
+由于：
+\[\pi(s_1)=e^{-U(q_1)}\]
+\[\pi(s_3)=e^{-U(q_2)}\]
+将前面几个公式代入到上式，得到：
+\[p(s_1 \to s_3)=\min(1,e^{K(p2)+U(q1)-U(q2)-K(p1)}\]
+哈密顿蒙特卡洛所采用的接受概率公式为：
+\[p(s_1 \to s_3)=\min(1,e^{H(s_2)-H(s_3)})=\min(1,e^{U(q_1)+K(p_2)-U(q_2)-K(p_3)})\]
+如果我们比较以上两个公式，就会发现二者不同，即HMC可能不满足Metropolis算法。
+实际上，由于哈密顿仿真不改变能量，因此状态 \(s_2\) 和 \(s_3\) 总能量相等，即HMC的接受概率为常数1，也就是HMC没有使用Metropolis算法。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org14e8d4a" class="outline-3">
+<h3 id="org14e8d4a">能量守恒</h3>
+<div class="outline-text-3" id="text-org14e8d4a">
+<p>
+如下这个仿真，蓝色的是位置-势能轨迹，洋红色是位置轨迹，而黑色是势能（对应概率）的三倍标准差界限。
+如果总能量守恒，则最大势能是一个常数，则仿真可以持续进行下去。反之,如果总能量不守恒:
+</p>
+<ol class="org-ol">
+<li>总能量持续变大，导致仿真发散;</li>
+<li>总能量持续变小，导致仿真停止。</li>
+</ol>
+<p>
+<img src="./ltximg/hmc5_2.gif" alt="hmc5_2.gif" /> <img src="./ltximg/hmc5_3.gif" alt="hmc5_3.gif" />
+</p>
+
+<p>
+因此保持能量守恒可以保证哈密顿蒙特卡洛方法的稳定。哈密顿蒙特卡洛算法有一个特点，即容易发散或者停止运行。发散和停止现象是由于该算法没有遵守破坏了能量守恒法则。算法的第三行会重新生成一个随机的动量，这时会改变动能，因此总能量也随之改变了。不断在不同仿真之间改变总能量可能导致总能量发散或者消失现象。
+</p>
+</div>
+
+<div id="outline-container-orgaf203f2" class="outline-4">
+<h4 id="orgaf203f2">能量守恒HMC</h4>
+<div class="outline-text-4" id="text-orgaf203f2">
+<p>
+如果对HMC算法进行修正，使其在重新生成动量的时候保持总能量守恒(即动能相同，p1和p2幅值相同)，则状态s1和状态s2的总能量相同，从而二者相互跳转概率相同。
+从状态s2到s3运行哈密顿仿真，总能量不变，在不考虑数值误差的情况下，s2和s3之间相互跳转概率也相同。
+因此状态s1和s3之间相互跳转概率相同。
+\[\mathcal A(s_1\to s_3)=\mathcal A(s_3\to s_1)\] 
+根据Metropolis-Hastings公式，从状态s1到s3的接受概率为：
+\[p(s_1 \to s_3)=\min(1,\frac{e^{-U(q_2)}}{e^{-U(q_1)}})\]
+</p>
+
+<p>
+因此在不同仿真之间保持总能量恒定的前提下，正确的接受概率的公式应当为：
+\[p(q_1 \to q_2)=\min(1,\frac{e^{-U(q_2)}}{e^{-U(q_1)}})\]
+</p>
+
+
+<p>
+为了保持能量守恒，每次重新初始化动量以后，应当重新设置其向量半径。
+</p>
+
+<p>
+根据恒定总能量和当前的势能，可以算出所需的动能：
+\[K(p)=\frac{p^T \cdot p}{2} = \frac{r^2}{2}=H-U(q)\]
+</p>
+
+<p>
+由此得到动量向量的半径应当为：
+<a id="org8ca7ebc"></a>
+\[r=\sqrt{2(H-U(q))}\]
+</p>
+
+<p>
+因此动量应当在半径为 \(r\) 的超球上均匀分布。对于物理空间中N个粒子总动能恒定的系统，可以称为（半径为r的）3N-1维球面 \(\mathbb{S}_R^{3N-1}\) 。综上所述，得到遵守能量守恒的哈密顿蒙特卡洛算法：
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #2aa1ae; background-color: #ecf3ec;">#</span><span style="color: #2aa1ae; background-color: #ecf3ec;">&#24635;&#33021;&#37327;</span>
+<span style="color: #715ab1;">H</span> = U<span style="color: #3a81c3;">(</span>xStar<span style="color: #3a81c3;">)</span> + K<span style="color: #3a81c3;">(</span>pStar<span style="color: #3a81c3;">)</span>
+<span style="color: #3a81c3; font-weight: bold;">for</span> i <span style="color: #3a81c3; font-weight: bold;">in</span> <span style="color: #3a81c3;">range</span><span style="color: #3a81c3;">(</span>SIMULATIONS<span style="color: #3a81c3;">)</span>:
+    <span style="color: #715ab1;">pStar</span> = np.random.randn<span style="color: #3a81c3;">(</span><span style="color: #4e3163;">2</span><span style="color: #3a81c3;">)</span>
+    <span style="color: #2aa1ae; background-color: #ecf3ec;">#</span><span style="color: #2aa1ae; background-color: #ecf3ec;">&#37325;&#26032;&#35774;&#32622;&#21160;&#37327;&#24133;&#20540;</span>
+    <span style="color: #715ab1;">K0</span> = np.clip<span style="color: #3a81c3;">(</span>H - U<span style="color: #6c3163;">(</span>xStar<span style="color: #6c3163;">)</span>,<span style="color: #4e3163;">1e</span>-<span style="color: #4e3163;">3</span>,H<span style="color: #3a81c3;">)</span>
+    <span style="color: #715ab1;">K1</span> = K<span style="color: #3a81c3;">(</span>pStar<span style="color: #3a81c3;">)</span>
+    <span style="color: #715ab1;">r0</span> = np.sqrt<span style="color: #3a81c3;">(</span>K0/K1<span style="color: #3a81c3;">)</span>
+    <span style="color: #715ab1;">pStar</span> = pStar * r0
+    <span style="color: #715ab1;">x0</span> = xStar
+    <span style="color: #3a81c3; font-weight: bold;">for</span> i <span style="color: #3a81c3; font-weight: bold;">in</span> <span style="color: #3a81c3;">range</span><span style="color: #3a81c3;">(</span>STEPS<span style="color: #3a81c3;">)</span>:
+        <span style="color: #715ab1;">xStar</span> = xStar + delta*dK<span style="color: #3a81c3;">(</span>pStar<span style="color: #3a81c3;">)</span>
+        <span style="color: #715ab1;">pStar</span> = pStar - delta*dU<span style="color: #3a81c3;">(</span>xStar<span style="color: #3a81c3;">)</span>
+    <span style="color: #2aa1ae; background-color: #ecf3ec;"># </span><span style="color: #2aa1ae; background-color: #ecf3ec;">&#20462;&#27491;&#30340;&#25509;&#21463;&#27010;&#29575;&#20844;&#24335;</span>
+    <span style="color: #715ab1;">alpha</span> = <span style="color: #3a81c3;">min</span><span style="color: #3a81c3;">(</span><span style="color: #4e3163;">1</span>,np.exp<span style="color: #6c3163;">(</span>U<span style="color: #2d9574;">(</span>x0<span style="color: #2d9574;">)</span>  - U<span style="color: #2d9574;">(</span>xStar<span style="color: #2d9574;">)</span><span style="color: #6c3163;">)</span><span style="color: #3a81c3;">)</span>
+    <span style="color: #3a81c3; font-weight: bold;">if</span> alpha &lt; rand<span style="color: #3a81c3;">()</span>:
+        <span style="color: #715ab1;">xStar</span> = x0
+    <span style="color: #3a81c3; font-weight: bold;">yield</span> xStar
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgcc428f2" class="outline-3">
+<h3 id="orgcc428f2">轨迹震荡</h3>
+<div class="outline-text-3" id="text-orgcc428f2">
+<p>
+修正后的哈密顿蒙特卡洛对于高维和高相关度的概率抽样结果仍然不甚理想，其原因与势能梯度有关。
+</p>
+
+<p>
+例如，对如下协方差的二维正态分布进行哈密顿仿真，
+</p>
+
+<p>
+\[\Sigma = \begin{bmatrix}1& 0.99 \\ 0.99 &1\\\end{bmatrix}\]
+</p>
+
+<p>
+可以得到如下的轨迹图，其中蓝色为势能位置轨迹，黑色椭圆为概率的三倍标准差界限，洋红色为位置轨迹：
+</p>
+
+
+<div class="figure">
+<p><img src="ltximg/hmc51.png" alt="hmc51.png" />
+</p>
+</div>
+
+<p>
+在概率最小主成分方向的势能梯度最大，仿真轨迹优先移动方向为最小主成分方向，导致轨迹与概率在空间的分布不一致。仿真轨迹无法快速遍历概率空间，结果是无法准确地抽样高维、高相关的概率。
+</p>
+
+<p>
+消除这种现象的方法为：对相空间变量进行变换，使轨迹优先向着较大主成分的方向移动。通过同时进行坐标变换和动量变换，可以使得轨迹移动方向与概率的空间分布一致，从而获得理想的抽样轨迹，进而可以准确地对高相关度的概率进行抽样。
+</p>
+
+<p>
+为了方便讨论，本文假设势能是正定二次型:
+ \[U(q)=\frac{(q-\mu)^T \Sigma^{-1} (q-\mu)}{2}\]
+ 动能一般采取二次函数，本文采取以下形式的动能：
+ \[K(p)=\frac{p^T \Sigma p}{2}\]
+ 以上定义的势能二次型矩阵和动能二次型矩阵为逆矩阵，因为这样可以产生理想的仿真轨迹：仿真轨迹与主成分方向一致。
+</p>
+
+<p>
+根据以上的讨论，对于高相关的概率，在原来相空间内仿真轨迹不理想，因此改为在变换后的相空间内进行仿真，因而需要对位置和动量进行变换。设势能能可以表示为原变量q或者变换后的变量d：
+\[U(q) = \frac{(q-\mu)^T \Sigma^{-1} (q-\mu)}{2} = \frac{d^T d}{2}\]
+d和q之间有如下变换关系：
+\[d=\Sigma^{-\frac{1}{2}} (q-\mu)\]
+\[q=\Sigma^{\frac{1}{2}} d + \mu\]
+类似的，动能可以表示为原变量p或者变换后的变量b：
+\[K(p)=\frac{p^T \Sigma p}{2}= \frac{b^T b}{2}\]
+和b和p之间的变换关系：
+\[b=\Sigma^{\frac{1}{2}} p\]
+\[p=\Sigma^{-\frac{1}{2}} b\]
+位置和动量的时间变化率存在以下变换关系：
+\[\dot d=\Sigma^{-\frac{1}{2}} \dot q\]
+\[\dot b=\Sigma^{\frac{1}{2}} \dot p\]
+将哈密顿公式代入上式，得到在新的相空间(d,b)内进行仿真的哈密顿公式：
+\[\dot d= \Sigma^{-\frac{1}{2}} \frac{dK}{dp}\Bigr|_{p=\Sigma^{-\frac{1}{2}} b}\]
+\[\dot b= -\Sigma^{\frac{1}{2}} \frac{dU}{dq}\Bigr|_{q=\Sigma^{\frac{1}{2}} b + \mu}\]
+</p>
+</div>
+<div id="outline-container-org3c05db5" class="outline-4">
+<h4 id="org3c05db5">算法实现</h4>
+<div class="outline-text-4" id="text-org3c05db5">
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #2aa1ae; background-color: #ecf3ec;"># </span><span style="color: #2aa1ae; background-color: #ecf3ec;">&#21160;&#33021;</span>
+<span style="color: #715ab1;">K</span> = <span style="color: #3a81c3; font-weight: bold;">lambda</span> p: np.<span style="color: #3a81c3;">sum</span><span style="color: #3a81c3;">(</span>p * np.dot<span style="color: #6c3163;">(</span>SIGMA,p<span style="color: #6c3163;">)</span>, axis = <span style="color: #4e3163;">0</span><span style="color: #3a81c3;">)</span>/<span style="color: #4e3163;">2</span>
+<span style="color: #715ab1;">dK</span> = <span style="color: #3a81c3; font-weight: bold;">lambda</span> p: np.dot<span style="color: #3a81c3;">(</span>SIGMA, p<span style="color: #3a81c3;">)</span>
+<span style="color: #2aa1ae; background-color: #ecf3ec;"># </span><span style="color: #2aa1ae; background-color: #ecf3ec;">&#24635;&#33021;&#37327;</span>
+<span style="color: #715ab1;">H</span> = np.<span style="color: #3a81c3;">sum</span><span style="color: #3a81c3;">(</span>U<span style="color: #6c3163;">(</span>xStar<span style="color: #6c3163;">)</span> + K<span style="color: #6c3163;">(</span>pStar<span style="color: #6c3163;">)</span><span style="color: #3a81c3;">)</span>
+<span style="color: #2aa1ae; background-color: #ecf3ec;"># </span><span style="color: #2aa1ae; background-color: #ecf3ec;">&#21464;&#25442;</span>
+<span style="color: #715ab1;">SIGMA_half</span> = sqrtm<span style="color: #3a81c3;">(</span>SIGMA<span style="color: #3a81c3;">)</span>
+<span style="color: #715ab1;">d2q</span> = <span style="color: #3a81c3; font-weight: bold;">lambda</span> d: np.dot<span style="color: #3a81c3;">(</span>SIGMA_half, d<span style="color: #3a81c3;">)</span> + MU
+<span style="color: #715ab1;">q2d</span> = <span style="color: #3a81c3; font-weight: bold;">lambda</span> q: np.linalg.solve<span style="color: #3a81c3;">(</span>SIGMA_half, q - MU<span style="color: #3a81c3;">)</span>
+<span style="color: #715ab1;">dq2dd</span> = <span style="color: #3a81c3; font-weight: bold;">lambda</span> dq: np.linalg.solve<span style="color: #3a81c3;">(</span>SIGMA_half, dq<span style="color: #3a81c3;">)</span>
+
+<span style="color: #715ab1;">p2b</span>= <span style="color: #3a81c3; font-weight: bold;">lambda</span> p: np.dot<span style="color: #3a81c3;">(</span>SIGMA_half, p<span style="color: #3a81c3;">)</span>
+<span style="color: #715ab1;">b2p</span> = <span style="color: #3a81c3; font-weight: bold;">lambda</span> b: np.linalg.solve<span style="color: #3a81c3;">(</span>SIGMA_half, b<span style="color: #3a81c3;">)</span>
+<span style="color: #715ab1;">dp2db</span>= <span style="color: #3a81c3; font-weight: bold;">lambda</span> dp: np.dot<span style="color: #3a81c3;">(</span>SIGMA_half, dp<span style="color: #3a81c3;">)</span>
+<span style="color: #3a81c3; font-weight: bold;">while</span> <span style="color: #4e3163;">True</span>:
+    <span style="color: #715ab1;">pStar</span> = np.random.randn<span style="color: #3a81c3;">(</span><span style="color: #4e3163;">2</span><span style="color: #3a81c3;">)</span>
+    <span style="color: #715ab1;">K0</span> = np.clip<span style="color: #3a81c3;">(</span>H - U<span style="color: #6c3163;">(</span>qStar<span style="color: #6c3163;">)</span>,<span style="color: #4e3163;">1e</span>-<span style="color: #4e3163;">3</span>,H<span style="color: #3a81c3;">)</span>
+    <span style="color: #715ab1;">K1</span> = K<span style="color: #3a81c3;">(</span>p0<span style="color: #3a81c3;">)</span>
+    <span style="color: #715ab1;">r0</span> = np.sqrt<span style="color: #3a81c3;">(</span>K0/K1<span style="color: #3a81c3;">)</span>
+    <span style="color: #2aa1ae; background-color: #ecf3ec;"># </span><span style="color: #2aa1ae; background-color: #ecf3ec;">&#20445;&#25345;&#33021;&#37327;&#23432;&#24658;</span>
+    <span style="color: #715ab1;">pStar</span> = pStar * r0
+
+    <span style="color: #715ab1;">q0</span> = qStar
+
+    <span style="color: #2aa1ae; background-color: #ecf3ec;"># </span><span style="color: #2aa1ae; background-color: #ecf3ec;">&#21464;&#25442;&#21040;&#26032;&#30340;&#30456;&#31354;&#38388;</span>
+    <span style="color: #715ab1;">dStar</span> = q2d<span style="color: #3a81c3;">(</span>qStar<span style="color: #3a81c3;">)</span>
+    <span style="color: #715ab1;">bStar</span> = p2b<span style="color: #3a81c3;">(</span>pStar<span style="color: #3a81c3;">)</span>
+
+    <span style="color: #2aa1ae; background-color: #ecf3ec;"># </span><span style="color: #2aa1ae; background-color: #ecf3ec;">&#21704;&#23494;&#39039;&#20223;&#30495;</span>
+    <span style="color: #3a81c3; font-weight: bold;">for</span> s <span style="color: #3a81c3; font-weight: bold;">in</span> <span style="color: #3a81c3;">range</span><span style="color: #3a81c3;">(</span>STEPS<span style="color: #3a81c3;">)</span>:
+        <span style="color: #715ab1;">dStar</span> = dStar + dt*dq2dd<span style="color: #3a81c3;">(</span>dK<span style="color: #6c3163;">(</span>b2p<span style="color: #2d9574;">(</span>bStar<span style="color: #2d9574;">)</span><span style="color: #6c3163;">)</span><span style="color: #3a81c3;">)</span>
+        <span style="color: #715ab1;">bStar</span> = bStar - dt*dp2db<span style="color: #3a81c3;">(</span>dU<span style="color: #6c3163;">(</span>q2d<span style="color: #2d9574;">(</span>qStar<span style="color: #2d9574;">)</span><span style="color: #6c3163;">)</span><span style="color: #3a81c3;">)</span>
+
+    <span style="color: #2aa1ae; background-color: #ecf3ec;"># </span><span style="color: #2aa1ae; background-color: #ecf3ec;">&#21464;&#25442;&#22238;&#21407;&#26469;&#30340;&#30456;&#31354;&#38388;</span>
+    <span style="color: #715ab1;">qStar</span> = d2q<span style="color: #3a81c3;">(</span>dStar<span style="color: #3a81c3;">)</span>
+    <span style="color: #715ab1;">pStar</span> = b2p<span style="color: #3a81c3;">(</span>bStar<span style="color: #3a81c3;">)</span>
+    <span style="color: #2aa1ae; background-color: #ecf3ec;"># </span><span style="color: #2aa1ae; background-color: #ecf3ec;">&#20462;&#27491;&#30340;&#25509;&#21463;&#27010;&#29575;&#20844;&#24335;</span>
+    <span style="color: #715ab1;">alpha</span> = np.exp<span style="color: #3a81c3;">(</span>np.clip<span style="color: #6c3163;">(</span>U<span style="color: #2d9574;">(</span>q0<span style="color: #2d9574;">)</span>- U<span style="color: #2d9574;">(</span>qStar<span style="color: #2d9574;">)</span>,-<span style="color: #4e3163;">20</span>,<span style="color: #4e3163;">0</span><span style="color: #6c3163;">)</span><span style="color: #3a81c3;">)</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgbc7137c" class="outline-4">
+<h4 id="orgbc7137c">参数估计</h4>
+<div class="outline-text-4" id="text-orgbc7137c">
+<p>
+到目前位置，我们都假定已经知道势能的参数&mu; 和&Sigma;。
+</p>
+
+<p>
+然而对于一个目标势能来说，这些参数是未知的，需要从抽样样本中估计出来。
+</p>
+
+<p>
+这个过程就像一个循环，从样本中估计参数，然后更新势能函数，随后使得采样更加准确，然后估计出更准确的参数&ctdot;。
+</p>
+
+<p>
+从统计理论可知，正态分布的均值和方差的后验估计的具有确定的解析公式。
+</p>
+
+<p>
+虽然我们研究的概率函数不一定服从正态分布，但我们可以假定其服从正态分布，从而利用上面所说的解析公式来更新均值和方差。
+以下直接使用教材（Bayesian Data Analysis 3rd, p72）中的公式。
+</p>
+
+<p>
+假定给定方差，均值的先验服从正态分布：
+\[\mu | \Sigma \sim N(\mu_0,\Sigma/\kappa_0)\]
+</p>
+
+<p>
+假设方差的先验服从逆wishart分布：
+\[\Sigma \sim InvWishart_{\nu 0}(\Lambda_0^{-1})\]
+</p>
+
+<p>
+则均值和方差的联合后验服从正态-逆wishart分布：
+\[p(\mu,\Sigma) \propto |\Sigma|^{((\nu_0+d)/2+1)}\text{exp}(-\frac{1}{2}\text{tr}(\Lambda_0
+  \Sigma^{-1})-\frac{\kappa_0}{2}(\mu - \mu_0)^T \Sigma^{-1}(\mu- \mu_0))\]
+则得到如下更新公式。
+自由度为：
+\[\kappa_n = \kappa_0 + n\]
+中间变量为：
+\[  \Lambda_n = \Lambda_0 + S + \frac{\kappa_0 n}{\kappa_{0}+ n} (\bar x -
+  \mu_0)(\bar x - \mu_0)^T\]
+方差的后验估计为：
+\[\hat \Sigma=\frac{\Lambda_n}{\kappa_0+n-D-1}\]
+均值的后验估计为
+\[\hat \mu = \frac{\kappa_0 }{\kappa_0 +n}\mu_0 + \frac{n}{\kappa_0 + n} \bar
+  x\]
+这些符号的意义说明如下：
+</p>
+<table border="0" cellspacing="0" cellpadding="6" rules="none" frame="none">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">符号</th>
+<th scope="col" class="org-left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">\(\Lambda_0\)</td>
+<td class="org-left">相当于先验 方差之和</td>
+</tr>
+
+<tr>
+<td class="org-left">\(\kappa_0\)</td>
+<td class="org-left">先验的自由度</td>
+</tr>
+
+<tr>
+<td class="org-left">n</td>
+<td class="org-left">批样本的大小</td>
+</tr>
+
+<tr>
+<td class="org-left">q</td>
+<td class="org-left">一批样本</td>
+</tr>
+
+<tr>
+<td class="org-left">\(\bar q\)</td>
+<td class="org-left">经验均值</td>
+</tr>
+
+<tr>
+<td class="org-left">S</td>
+<td class="org-left">散度矩阵</td>
+</tr>
+
+<tr>
+<td class="org-left">\(\mu_0\)</td>
+<td class="org-left">先验均值</td>
+</tr>
+
+<tr>
+<td class="org-left">\(\hat \Sigma\)</td>
+<td class="org-left">后验协方差估计</td>
+</tr>
+
+<tr>
+<td class="org-left">\(\hat \mu\)</td>
+<td class="org-left">后验均值估计</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org520c23b" class="outline-2">
+<h2 id="org520c23b">实验</h2>
+<div class="outline-text-2" id="text-org520c23b">
+<p>
+我们使用一系列从一般到高度奇异的协方差的多维正态分布进行抽样,对角元为 \(\frac{1}{\rho}\) ，其它元素为 \(\rho\) ，其中 \(\rho\) 从0.01 变化到 0.999。当 \(\rho\) 为0.01时，对应的多维正态分布大致为超球。当 \(\rho\) 接近于1时(如0.999或者0.9），对应的多维正态分布大致类似针形。因此这个实验设置涵盖了不同类型的概率分布。
+</p>
+
+<p>
+\[\Sigma = \begin{bmatrix}\frac{1}{\rho} & \cdots & \rho \\ \vdots & \ddots & \vdots\\ \rho & \cdots & \frac{1}{\rho}\\\end{bmatrix}\]  
+</p>
+
+<p>
+抽样结果的衡量标准是协方差矩阵的估计误差。实验分别对2维到50维正态分布分别进行抽样。
+</p>
+
+<p>
+图中，虚线为HMC的估计误差，实线为修正方法估计误差，颜色相同线对应于为同一协方差矩阵，横坐标为变量的维度，纵坐标为协方差的估计误差。修正方法的估计误差大概比HMC的估计误差小一个到两个数量级，并且这个结论适用于多个维度。
+高相关的协方差近似于1矩阵，HMC的估计误差接近1说明估计误差较大。
+</p>
+
+
+<div class="figure">
+<p><img src="./ltximg/hmc_ghmc.png" alt="hmc_ghmc.png" />
+</p>
+</div>
+
+<p>
+图中显示均值的估计误差。与上图相似，相同颜色的实线为修正方法产生的估计误差，而虚线为HMC产生的估计误差。修正方法的误差一般低于HMC误差一到两个数量级。
+与修正方法相比，HMC估计误差不仅较大，而且在较大的范围内变动，说明HMC的估计结果不准确并且不够稳定。
+</p>
+
+
+
+<div class="figure">
+<p><img src="./ltximg/hmc_ghmc_mu.png" alt="hmc_ghmc_mu.png" />
+</p>
+</div>
+
+
+
+<p>
+<a href="https://github.com/statisticalcomputing/Gaussian-Hamiltonian-Monte-Carlo/blob/master/hmc_ghmc_multi.py">代码</a>
+</p>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="date">Created: 2020-07-15 Wed 09:38</p>
+</div>
+</body>
+</html>
